@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -61,6 +62,7 @@ public class TeleOpMode_TankJohn extends OpMode
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
     private Servo servo = null;
+    private GyroSensor gyro = null;
 
     int x;
     int triggerSet;
@@ -83,6 +85,7 @@ public class TeleOpMode_TankJohn extends OpMode
             leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
             servo = hardwareMap.get(Servo.class, "gripper");
+            gyro = hardwareMap.get(GyroSensor.class, ""); //Find name on device
 
             // Most robots need the motor on one side to be reversed to drive forward
             // Reverse the motor that runs backwards when connected directly to the battery
@@ -107,6 +110,7 @@ public class TeleOpMode_TankJohn extends OpMode
         rightfrontDrive.setPower(0);
         leftbackDrive.setPower(0);
         rightbackDrive.setPower(0);
+        servo.setPosition(0);
     }
 
     /*
@@ -129,6 +133,7 @@ public class TeleOpMode_TankJohn extends OpMode
         double rightRearPower = 0;
         double gripper = 0;
         double joyStick;
+        double gyroValue;
         String nothing = "";
 
 
@@ -201,7 +206,7 @@ public class TeleOpMode_TankJohn extends OpMode
             telemetry.addData("Rear left motor activated", nothing);
         }
         else if(x == 3){
-            telemetry.addData("Rear left motor activated", nothing);
+            telemetry.addData("Rear right motor activated", nothing);
         }
         else if(x == 4) {
             telemetry.addData("Gripper activated", nothing);
