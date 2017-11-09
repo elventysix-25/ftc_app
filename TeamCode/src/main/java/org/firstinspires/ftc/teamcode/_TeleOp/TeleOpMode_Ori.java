@@ -91,9 +91,13 @@ public class TeleOpMode_Ori extends OpMode
             gripper = hardwareMap.get(Servo.class, "gripper");
 
             leftfrontDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightfrontDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             leftbackDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightbackDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             //gripper.setPosition(0);
         }
         catch(IllegalArgumentException iax) {
@@ -139,7 +143,7 @@ public class TeleOpMode_Ori extends OpMode
         double powerX;
         double powerLeft = 0;
         double powerRight = 0;
-        double powerMax = 1;
+        double powerMax = .75;
         boolean padRight = false;
         boolean padLeft = false;
         double gripperIncrement = .01;

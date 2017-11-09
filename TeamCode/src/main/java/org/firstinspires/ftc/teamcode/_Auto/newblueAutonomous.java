@@ -16,10 +16,10 @@ public class newblueAutonomous extends LinearOpMode{
     @Override
     public void runOpMode(){
         // Set up the motor matrix (that sounds cool)
-        motors[0][0] = hardwareMap.dcMotor.get("motorFrontLeft");
-        motors[0][1] = hardwareMap.dcMotor.get("motorFrontRight");
-        motors[1][0] = hardwareMap.dcMotor.get("motorBackLeft");
-        motors[1][1] = hardwareMap.dcMotor.get("motorBackRight");
+        motors[0][0] = hardwareMap.dcMotor.get("frontLeft");
+        motors[0][1] = hardwareMap.dcMotor.get("frontRight");
+        motors[1][0] = hardwareMap.dcMotor.get("backLeft");
+        motors[1][1] = hardwareMap.dcMotor.get("backRight");
         // The motors on the left side of the robot need to be in reverse mode
         for(DcMotor[] motor : motors){
             motor[0].setDirection(DcMotor.Direction.REVERSE);
@@ -35,7 +35,7 @@ public class newblueAutonomous extends LinearOpMode{
         runtime.reset();
         while(runtime.seconds()<10); runtime.reset();
 
-        while(runtime.milliseconds()<1600){
+        while(runtime.milliseconds()<700){
             // Loop through front and back motors
             for(DcMotor[] motor : motors){
                 // Set left motor power
@@ -45,6 +45,15 @@ public class newblueAutonomous extends LinearOpMode{
             }
         }
 
+        while(runtime.milliseconds()<200){
+            // Loop through front and back motors
+            for(DcMotor[] motor : motors){
+                // Set left motor power
+                motor[0].setPower(-100);
+                // Set right motor power
+                motor[1].setPower(-100);
+            }
+        }
 
         runtime.reset();
         // Loop through front and back motors
