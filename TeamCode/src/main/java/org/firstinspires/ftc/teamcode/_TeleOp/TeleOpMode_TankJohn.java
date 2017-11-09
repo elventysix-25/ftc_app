@@ -84,7 +84,7 @@ public class TeleOpMode_TankJohn extends OpMode
             leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
             servo = hardwareMap.get(Servo.class, "gripper");
-            gyro = hardwareMap.get(GyroSensor.class, "");
+            gyro = hardwareMap.get(GyroSensor.class, "gyro");
 
             // Most robots need the motor on one side to be reversed to drive forward
             // Reverse the motor that runs backwards when connected directly to the battery
@@ -135,7 +135,6 @@ public class TeleOpMode_TankJohn extends OpMode
         double rightRearPower = 0;
         double gripper = 0;
         double joyStick;
-        //double gyroValue;
         String nothing = "";
 
         joyStick  = -gamepad1.left_stick_y;
@@ -143,7 +142,7 @@ public class TeleOpMode_TankJohn extends OpMode
         if((gamepad1.right_trigger > 0) && (triggerSet == 0)){
             x = x + 1;
             triggerSet = 1;
-            if(x > 5){
+            if(x > 4){
                 x = 0;
             }
         }
@@ -172,10 +171,7 @@ public class TeleOpMode_TankJohn extends OpMode
             gripper = Math.abs(joyStick);
             nothing = "gripper";
         }
-        else if(x == 5){
-            gyroValue = joyStick;
-            nothing = "gyro";
-        }
+
         telemetry.addData("x", x);
         telemetry.addData("activated: ", nothing);
         telemetry.addData("leftFrontPower", leftFrontPower);
@@ -183,7 +179,7 @@ public class TeleOpMode_TankJohn extends OpMode
         telemetry.addData("leftRearPower", leftRearPower);
         telemetry.addData("rightRearPower", rightRearPower);
         telemetry.addData("gripperPosition", gripper);
-        telemetry.addData("gyro", gyro);
+        telemetry.addData("gyro", gyro.getHeading());
 
         // Send calculated power to wheels
         if(debug == false) {
