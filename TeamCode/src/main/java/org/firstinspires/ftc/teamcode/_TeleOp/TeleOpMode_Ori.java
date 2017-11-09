@@ -137,8 +137,11 @@ public class TeleOpMode_Ori extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
         double powerY;
         double powerX;
-        double powerLeft = 0;
-        double powerRight = 0;
+        double powerLeftX;
+        double powerLeftFront = 0;
+        double powerRightFront = 0;
+        double powerLeftBack = 0;
+        double powerRightBack = 0;
         double powerMax = 1;
         boolean padRight = false;
         boolean padLeft = false;
@@ -146,17 +149,19 @@ public class TeleOpMode_Ori extends OpMode
 
         powerY  = gamepad1.left_stick_y;
         powerX = -gamepad1.right_stick_x;
+        powerLeftX = gamepad1.left_stick_x;
         padLeft = gamepad1.dpad_left;
         padRight = gamepad1.dpad_right;
 
-        powerMax = Collections.max(Arrays.asList(powerMax, powerLeft, powerRight));
+        powerMax = Collections.max(Arrays.asList(powerMax, powerLeftFront, powerLeftBack, powerRightFront, powerRightBack, powerLeftX));
 
-        boolean allZero = (abs(powerX) == 0) && (abs(powerY) == 0);
-        double powerTotal = (abs(powerX) + abs(powerY)) > powerMax ? (abs(powerX) + abs(powerY)) : powerMax;
+        boolean allZero = (abs(powerX) == 0) && (abs(powerY) == 0) && (abs(powerLeftX) == 0);
+        double powerTotal = (abs(powerX) + abs(powerY) + abs(powerLeftX)) > powerMax ? (abs(powerX) + abs(powerY) + abs(powerLeftX)) : powerMax;
 
-        powerLeft = allZero ? 0 : ((powerX + powerY) / (powerTotal * powerMax));
-        powerLeft = -powerLeft;
-        powerRight = allZero ? 0 : ((powerX - powerY) / (powerTotal * powerMax));
+        powerLeftFront = allZero ? 0 : ((powerX + powerY + powerLeftX) / (powerTotal * powerMax));
+        powerLeftBack = allZero ? 0 : ((powerX + powerY - powerLeftX) / (powerTotal * powerMax));
+        powerRightFront = allZero ? 0 : ((powerX - powerY - powerLeftX) / (powerTotal * powerMax));
+        powerRightBack = allZero ? 0 : ((powerX - powerY + powerLeftX) / (powerTotal * powerMax));
 
         if (padLeft) {
             gripperChange = -gripperIncrement;
@@ -176,16 +181,16 @@ public class TeleOpMode_Ori extends OpMode
 
         if (!debug) {
             // Send calculated power to wheels
-            leftfrontDrive.setPower(powerLeft);
-            rightfrontDrive.setPower(powerRight);
-            leftbackDrive.setPower(powerLeft);
-            rightbackDrive.setPower(powerRight);
+            leftfrontDrive.setPower(powerLeftFront);
+            rightfrontDrive.setPower(powerRightFront);
+            leftbackDrive.setPower(powerLeftBack);
+            rightbackDrive.setPower(powerRightBack);
             gripper.setPosition(gripperPos);
         }
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", powerLeft, powerRight);
+        telemetry.addData("Motors", "leftFront (%.2f), rightFront (%.2f), leftBack (%.2f), rightBack (%.2f)", powerLeftFront, powerRightFront, powerLeftBack, powerRightBack);
         telemetry.addData("padRight", padRight);
         telemetry.addData("padLeft", padLeft);
         telemetry.addData("gripperPos", gripperPos);
