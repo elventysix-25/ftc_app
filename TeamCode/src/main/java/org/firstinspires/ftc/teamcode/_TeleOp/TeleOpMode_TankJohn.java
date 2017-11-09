@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode._TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -51,33 +52,47 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name="TeleOpMode_TankJohn", group="Iterative Opmode")
 public class TeleOpMode_TankJohn extends OpMode
 {
+    boolean debug = false;
+
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftfrontDrive = null;
     private DcMotor rightfrontDrive = null;
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
+    private Servo servo = null;
+
+    private int x;
+    private int triggerSet;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-        telemetry.addData("Status", "Initialized");
+        x = 0;
+        triggerSet = 0;
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        leftfrontDrive  = hardwareMap.get(DcMotor.class, "frontLeft");
-        rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
-        leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-        rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
+        try {
+            leftfrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
+            rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+            leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
+            rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
+            servo = hardwareMap.get(Servo.class, "gripper");
+
+            // Most robots need the motor on one side to be reversed to drive forward
+            // Reverse the motor that runs backwards when connected directly to the battery
+            leftfrontDrive.setDirection(DcMotor.Direction.REVERSE);
+            rightfrontDrive.setDirection(DcMotor.Direction.FORWARD);
+            leftbackDrive.setDirection(DcMotor.Direction.REVERSE);
+            rightbackDrive.setDirection(DcMotor.Direction.FORWARD);
+        }
+        catch (IllegalArgumentException iax) {
+            debug = true;
+        }
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
@@ -87,6 +102,12 @@ public class TeleOpMode_TankJohn extends OpMode
      */
     @Override
     public void init_loop() {
+        if(!debug) {
+            leftfrontDrive.setPower(0);
+            rightfrontDrive.setPower(0);
+            leftbackDrive.setPower(0);
+            rightbackDrive.setPower(0);
+        }
     }
 
     /*
@@ -103,33 +124,66 @@ public class TeleOpMode_TankJohn extends OpMode
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
+        double leftFrontPower = 0;
+        double leftRearPower = 0;
+        double rightFrontPower = 0;
+        double rightRearPower = 0;
+        double gripper = 0;
+        double joyStick;
+        String nothing = "";
 
-        // Choose to drive using either Tank Mode, or POV Mode
-        // Comment out the method that's not used.  The default below is POV.
+        joyStick  = -gamepad1.left_stick_y;
 
-        // POV Mode uses left stick to go forward, and right stick to turn.
-        // - This uses basic math to combine motions and is easier to drive straight.
-       // double drive = -gamepad1.left_stick_y;
-        //double turn  =  gamepad1.right_stick_x;
-        //leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-        //rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+        if((gamepad1.right_trigger > 0) && (triggerSet == 0)){
+            x = x + 1;
+            triggerSet = 1;
+            if(x > 4){
+                x = 0;
+            }
+        }
+        else if((triggerSet == 1) && (gamepad1.right_trigger == 0)) {
+            triggerSet = 0;
+        }
 
-        // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
-         leftPower  = -gamepad1.left_stick_y ;
-         rightPower = -gamepad1.right_stick_y ;
+        if(x == 0){
+            leftFrontPower = joyStick;
+            nothing = "leftFront";
+        }
+        else if(x == 1){
+            rightFrontPower = joyStick;
+            nothing = "rightFront";
+        }
+        else if(x == 2){
+            leftRearPower = joyStick;
+            nothing = "leftRear";
+        }
+        else if(x == 3){
+            rightRearPower = joyStick;
+            nothing = "rightRear";
+        }
+        else if(x == 4){
+            gripper = Math.abs(joyStick);
+            nothing = "gripper";
+        }
+        telemetry.addData("x", x);
+        telemetry.addData("activated: ", nothing);
+        telemetry.addData("leftFrontPower", leftFrontPower);
+        telemetry.addData("rightFrontPower", rightFrontPower);
+        telemetry.addData("leftRearPower", leftRearPower);
+        telemetry.addData("rightRearPower", rightRearPower);
+        telemetry.addData("gripperPosition", gripper);
 
         // Send calculated power to wheels
-        leftfrontDrive.setPower(leftPower);
-        rightfrontDrive.setPower(rightPower);
-        leftbackDrive.setPower(leftPower);
-        rightbackDrive.setPower(rightPower);
+        if(debug == false) {
+            leftfrontDrive.setPower(leftFrontPower);
+            rightfrontDrive.setPower(rightFrontPower);
+            leftbackDrive.setPower(leftRearPower);
+            rightbackDrive.setPower(rightRearPower);
+            servo.setPosition(gripper);
+        }
 
-        // Show the elapsed game time and wheel power.
+        // Show the elapsed game time
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
     }
 
     /*
