@@ -29,11 +29,15 @@
 
 package org.firstinspires.ftc.teamcode._TeleOp;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -63,6 +67,8 @@ public class TeleOpMode_TankJohn extends OpMode
     private DcMotor rightbackDrive = null;
     private Servo servo = null;
     private GyroSensor gyro = null;
+    private ColorSensor colorSensor = null;
+    private UltrasonicSensor distanceSensor = null;
 
     private int x;
     private int triggerSet;
@@ -85,6 +91,13 @@ public class TeleOpMode_TankJohn extends OpMode
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
             servo = hardwareMap.get(Servo.class, "gripper");
             gyro = hardwareMap.get(GyroSensor.class, "gyro");
+            colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+            gyro.calibrate();
+
+            while(gyro.isCalibrating()){
+                try {Thread.sleep(100);}
+                    catch(Exception e){}
+            }
 
             // Most robots need the motor on one side to be reversed to drive forward
             // Reverse the motor that runs backwards when connected directly to the battery
@@ -96,6 +109,8 @@ public class TeleOpMode_TankJohn extends OpMode
         catch (IllegalArgumentException iax) {
             debug = true;
         }
+
+        distanceSensor = hardwareMap.get(UltrasonicSensor.class, "distanceSensor");
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
@@ -180,6 +195,11 @@ public class TeleOpMode_TankJohn extends OpMode
         telemetry.addData("rightRearPower", rightRearPower);
         telemetry.addData("gripperPosition", gripper);
         telemetry.addData("gyro", gyro.getHeading());
+        telemetry.addData("Red sensor", colorSensor.red());
+        telemetry.addData("Alpha sensor", colorSensor.alpha());
+        telemetry.addData("argb sensor", colorSensor.argb());
+        telemetry.addData("Blue sensor", colorSensor.blue());
+        telemetry.addData("distanceSensor", distanceSensor.status());
 
         // Send calculated power to wheels
         if(debug == false) {
