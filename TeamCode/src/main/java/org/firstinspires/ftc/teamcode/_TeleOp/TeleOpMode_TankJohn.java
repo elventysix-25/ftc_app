@@ -29,10 +29,15 @@
 
 package org.firstinspires.ftc.teamcode._TeleOp;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+//import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+//import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -61,6 +66,10 @@ public class TeleOpMode_TankJohn extends OpMode
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
     private Servo servo = null;
+    private Servo servo2 = null;
+   // private GyroSensor gyro = null;
+    private ColorSensor colorSensor = null;
+   // private UltrasonicSensor distanceSensor = null;
 
     private int x;
     private int triggerSet;
@@ -82,6 +91,16 @@ public class TeleOpMode_TankJohn extends OpMode
             leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
             servo = hardwareMap.get(Servo.class, "gripper");
+            servo2 = hardwareMap.get(Servo.class, "arm");
+            //gyro = hardwareMap.get(GyroSensor.class, "gyro");
+            colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+
+            /*gyro.calibrate();
+
+            while(gyro.isCalibrating()){
+                try {Thread.sleep(100);}
+                    catch(Exception e){}
+            }*/
 
             // Most robots need the motor on one side to be reversed to drive forward
             // Reverse the motor that runs backwards when connected directly to the battery
@@ -93,6 +112,8 @@ public class TeleOpMode_TankJohn extends OpMode
         catch (IllegalArgumentException iax) {
             debug = true;
         }
+
+        //distanceSensor = hardwareMap.get(UltrasonicSensor.class, "distanceSensor");
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
@@ -102,11 +123,14 @@ public class TeleOpMode_TankJohn extends OpMode
      */
     @Override
     public void init_loop() {
+
         if(!debug) {
             leftfrontDrive.setPower(0);
             rightfrontDrive.setPower(0);
             leftbackDrive.setPower(0);
             rightbackDrive.setPower(0);
+            servo.setPosition(0);
+            servo2.setPosition(0);
         }
     }
 
@@ -129,6 +153,7 @@ public class TeleOpMode_TankJohn extends OpMode
         double rightFrontPower = 0;
         double rightRearPower = 0;
         double gripper = 0;
+        double arm = 0;
         double joyStick;
         String nothing = "";
 
@@ -137,7 +162,7 @@ public class TeleOpMode_TankJohn extends OpMode
         if((gamepad1.right_trigger > 0) && (triggerSet == 0)){
             x = x + 1;
             triggerSet = 1;
-            if(x > 4){
+            if(x > 5){
                 x = 0;
             }
         }
@@ -165,6 +190,11 @@ public class TeleOpMode_TankJohn extends OpMode
             gripper = Math.abs(joyStick);
             nothing = "gripper";
         }
+        else if(x == 5){
+            arm = Math.abs(joyStick);
+            nothing = "arm";
+        }
+
         telemetry.addData("x", x);
         telemetry.addData("activated: ", nothing);
         telemetry.addData("leftFrontPower", leftFrontPower);
@@ -172,6 +202,21 @@ public class TeleOpMode_TankJohn extends OpMode
         telemetry.addData("leftRearPower", leftRearPower);
         telemetry.addData("rightRearPower", rightRearPower);
         telemetry.addData("gripperPosition", gripper);
+        telemetry.addData("armPosition", arm);
+        /*try {
+            telemetry.addData("gyro", gyro.getHeading());
+        }
+        catch (IllegalArgumentException iax) {
+            debug = true;
+        }*/
+
+        if (colorSensor != null) {
+            telemetry.addData("Alpha sensor", colorSensor.alpha());
+            telemetry.addData("Red sensor", colorSensor.red());
+            telemetry.addData("Green sensor", colorSensor.green());
+            telemetry.addData("Blue sensor", colorSensor.blue());
+        }
+       // telemetry.addData("distanceSensor", distanceSensor.status());
 
         // Send calculated power to wheels
         if(debug == false) {
@@ -180,6 +225,7 @@ public class TeleOpMode_TankJohn extends OpMode
             leftbackDrive.setPower(leftRearPower);
             rightbackDrive.setPower(rightRearPower);
             servo.setPosition(gripper);
+            servo2.setPosition(arm);
         }
 
         // Show the elapsed game time
