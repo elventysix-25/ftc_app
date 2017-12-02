@@ -92,11 +92,11 @@ public class  TeleOpMode_Ori extends OpMode
 
             leftfrontDrive.setDirection(DcMotor.Direction.REVERSE);
             leftfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            rightfrontDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
             rightfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             leftbackDrive.setDirection(DcMotor.Direction.REVERSE);
             leftbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            rightbackDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
             rightbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             //gripper.setPosition(0);
         }
