@@ -54,7 +54,7 @@ import static java.lang.Math.abs;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOpMode_Ori", group="Iterative Opmode")
+@TeleOp(name="TeleOpMode_Finn", group="Iterative Opmode")
 public class TeleOpMode_Finn extends OpMode
 {
     // Declare OpMode members.
