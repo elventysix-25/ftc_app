@@ -68,7 +68,7 @@ public class TeleOpMode_TankJohn extends OpMode
     private Servo servo = null;
     private Servo servo2 = null;
    // private GyroSensor gyro = null;
-    private ColorSensor colorSensor = null;
+    private ColorSensor colorSensor;
    // private UltrasonicSensor distanceSensor = null;
 
     private int x;
@@ -93,7 +93,7 @@ public class TeleOpMode_TankJohn extends OpMode
             servo = hardwareMap.get(Servo.class, "gripper");
             servo2 = hardwareMap.get(Servo.class, "arm");
             //gyro = hardwareMap.get(GyroSensor.class, "gyro");
-            colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+            colorSensor = hardwareMap.colorSensor.get("colorSensor");
 
             /*gyro.calibrate();
 
@@ -210,12 +210,25 @@ public class TeleOpMode_TankJohn extends OpMode
             debug = true;
         }*/
 
-        if (colorSensor != null) {
-            telemetry.addData("Alpha sensor", colorSensor.alpha());
-            telemetry.addData("Red sensor", colorSensor.red());
-            telemetry.addData("Green sensor", colorSensor.green());
-            telemetry.addData("Blue sensor", colorSensor.blue());
+        telemetry.addData("Luminosity", colorSensor.alpha());
+        telemetry.addData("Red sensor", colorSensor.red());
+        telemetry.addData("Blue sensor", colorSensor.blue());
+
+        if(colorSensor.blue() - colorSensor.red() >= 0){
+            telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
         }
+        else if(colorSensor.red() - colorSensor.blue() >= 20){
+            telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
+        }
+        else{
+            if(colorSensor.red() > colorSensor.blue()){
+                telemetry.addData("Too close, red bigger than blue by", colorSensor.red() - colorSensor.blue());
+            }
+            else{
+                telemetry.addData("Colors are equal", 0);
+            }
+        }
+
        // telemetry.addData("distanceSensor", distanceSensor.status());
 
         // Send calculated power to wheels
