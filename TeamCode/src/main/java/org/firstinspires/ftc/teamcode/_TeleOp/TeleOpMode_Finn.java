@@ -29,16 +29,16 @@
 
 package org.firstinspires.ftc.teamcode._TeleOp;
 
-import android.graphics.Color;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-//import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-//import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static java.lang.Math.abs;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -54,33 +54,26 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOpMode_TankJohn", group="Iterative Opmode")
-public class TeleOpMode_TankJohn extends OpMode
+@TeleOp(name="TeleOpMode_Ori", group="Iterative Opmode")
+public class TeleOpMode_Finn extends OpMode
 {
-    boolean debug = false;
-
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftfrontDrive = null;
     private DcMotor rightfrontDrive = null;
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
-    private Servo servo = null;
-    private Servo servo2 = null;
-   // private GyroSensor gyro = null;
-    private ColorSensor colorSensor = null;
-   // private UltrasonicSensor distanceSensor = null;
-
-    private int x;
-    private int triggerSet;
+    private Servo gripper = null;
+    private boolean debug;
+    private double gripperPos = 0;
+    private double gripperChange = 0;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-        x = 0;
-        triggerSet = 0;
+        telemetry.addData("Status", "Initialized");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -90,30 +83,21 @@ public class TeleOpMode_TankJohn extends OpMode
             rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
             leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
-            servo = hardwareMap.get(Servo.class, "gripper");
-            servo2 = hardwareMap.get(Servo.class, "arm");
-            //gyro = hardwareMap.get(GyroSensor.class, "gyro");
-            colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+            gripper = hardwareMap.get(Servo.class, "gripper");
 
-            /*gyro.calibrate();
-
-            while(gyro.isCalibrating()){
-                try {Thread.sleep(100);}
-                    catch(Exception e){}
-            }*/
-
-            // Most robots need the motor on one side to be reversed to drive forward
-            // Reverse the motor that runs backwards when connected directly to the battery
             leftfrontDrive.setDirection(DcMotor.Direction.REVERSE);
             rightfrontDrive.setDirection(DcMotor.Direction.FORWARD);
             leftbackDrive.setDirection(DcMotor.Direction.REVERSE);
             rightbackDrive.setDirection(DcMotor.Direction.FORWARD);
+            //gripper.setPosition(0);
         }
-        catch (IllegalArgumentException iax) {
+        catch(IllegalArgumentException iax) {
             debug = true;
         }
 
-        //distanceSensor = hardwareMap.get(UltrasonicSensor.class, "distanceSensor");
+
+        // Most robots need the motor on one side to be reversed to drive forward
+        // Reverse the motor that runs backwards when connected directly to the battery
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
@@ -123,15 +107,13 @@ public class TeleOpMode_TankJohn extends OpMode
      */
     @Override
     public void init_loop() {
-
-        if(!debug) {
+        if (!debug) {
             leftfrontDrive.setPower(0);
             rightfrontDrive.setPower(0);
             leftbackDrive.setPower(0);
             rightbackDrive.setPower(0);
-            servo.setPosition(0);
-            servo2.setPosition(0);
         }
+        gripperChange = 0;
     }
 
     /*
@@ -148,88 +130,60 @@ public class TeleOpMode_TankJohn extends OpMode
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
-        double leftFrontPower = 0;
-        double leftRearPower = 0;
-        double rightFrontPower = 0;
-        double rightRearPower = 0;
-        double gripper = 0;
-        double arm = 0;
-        double joyStick;
-        String nothing = "";
+        double powerY;
+        double powerX;
+        double powerLeft = 0;
+        double powerRight = 0;
+        double powerMax = 1;
+        boolean padRight = false;
+        boolean padLeft = false;
+        double gripperIncrement = .01;
 
-        joyStick  = -gamepad1.left_stick_y;
+        powerY  = gamepad1.left_stick_y;
+        powerX = -gamepad1.right_stick_x;
+        padLeft = gamepad1.dpad_left;
+        padRight = gamepad1.dpad_right;
 
-        if((gamepad1.right_trigger > 0) && (triggerSet == 0)){
-            x = x + 1;
-            triggerSet = 1;
-            if(x > 5){
-                x = 0;
-            }
-        }
-        else if((triggerSet == 1) && (gamepad1.right_trigger == 0)) {
-            triggerSet = 0;
-        }
+        powerMax = Collections.max(Arrays.asList(powerMax, powerLeft, powerRight));
 
-        if(x == 0){
-            leftFrontPower = joyStick;
-            nothing = "leftFront";
-        }
-        else if(x == 1){
-            rightFrontPower = joyStick;
-            nothing = "rightFront";
-        }
-        else if(x == 2){
-            leftRearPower = joyStick;
-            nothing = "leftRear";
-        }
-        else if(x == 3){
-            rightRearPower = joyStick;
-            nothing = "rightRear";
-        }
-        else if(x == 4){
-            gripper = Math.abs(joyStick);
-            nothing = "gripper";
-        }
-        else if(x == 5){
-            arm = Math.abs(joyStick);
-            nothing = "arm";
+        boolean allZero = (abs(powerX) == 0) && (abs(powerY) == 0);
+        double powerTotal = (abs(powerX) + abs(powerY)) > powerMax ? (abs(powerX) + abs(powerY)) : powerMax;
+
+        powerLeft = allZero ? 0 : ((powerX + powerY) / (powerTotal * powerMax));
+        powerLeft = -powerLeft;
+        powerRight = allZero ? 0 : ((powerX - powerY) / (powerTotal * powerMax));
+
+        if (padLeft) {
+            gripperChange = -gripperIncrement;
         }
 
-        telemetry.addData("x", x);
-        telemetry.addData("activated: ", nothing);
-        telemetry.addData("leftFrontPower", leftFrontPower);
-        telemetry.addData("rightFrontPower", rightFrontPower);
-        telemetry.addData("leftRearPower", leftRearPower);
-        telemetry.addData("rightRearPower", rightRearPower);
-        telemetry.addData("gripperPosition", gripper);
-        telemetry.addData("armPosition", arm);
-        /*try {
-            telemetry.addData("gyro", gyro.getHeading());
-        }
-        catch (IllegalArgumentException iax) {
-            debug = true;
-        }*/
-
-        if (colorSensor != null) {
-            telemetry.addData("Alpha sensor", colorSensor.alpha());
-            telemetry.addData("Red sensor", colorSensor.red());
-            telemetry.addData("Green sensor", colorSensor.green());
-            telemetry.addData("Blue sensor", colorSensor.blue());
-        }
-       // telemetry.addData("distanceSensor", distanceSensor.status());
-
-        // Send calculated power to wheels
-        if(debug == false) {
-            leftfrontDrive.setPower(leftFrontPower);
-            rightfrontDrive.setPower(rightFrontPower);
-            leftbackDrive.setPower(leftRearPower);
-            rightbackDrive.setPower(rightRearPower);
-            servo.setPosition(gripper);
-            servo2.setPosition(arm);
+        else if (padRight) {
+            gripperChange = gripperIncrement;
         }
 
-        // Show the elapsed game time
+        else {
+            gripperChange = 0;
+        }
+
+        gripperPos = gripperPos + gripperChange;
+
+        gripperPos = gripperPos > 1 ? 1 : gripperPos < 0 ? 0 : gripperPos;
+
+        if (!debug) {
+            // Send calculated power to wheels
+            leftfrontDrive.setPower(powerLeft);
+            rightfrontDrive.setPower(powerRight);
+            leftbackDrive.setPower(powerLeft);
+            rightbackDrive.setPower(powerRight);
+            gripper.setPosition(gripperPos);
+        }
+
+        // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Motors", "left (%.2f), right (%.2f)", powerLeft, powerRight);
+        telemetry.addData("padRight", padRight);
+        telemetry.addData("padLeft", padLeft);
+        telemetry.addData("gripperPos", gripperPos);
     }
 
     /*
