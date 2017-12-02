@@ -60,7 +60,7 @@ import static java.lang.Math.abs;
  */
 
 @TeleOp(name="TeleOpMode_Ori", group="Iterative Opmode")
-public class TeleOpMode_Ori extends OpMode
+public class  TeleOpMode_Ori extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
