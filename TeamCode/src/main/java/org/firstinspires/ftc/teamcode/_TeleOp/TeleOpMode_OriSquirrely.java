@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode._TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -39,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -54,7 +56,7 @@ import static java.lang.Math.abs;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOpMode_Ori", group="Iterative Opmode")
+@TeleOp(name="TeleOpMode_OriSquirrely", group="Iterative Opmode")
 public class TeleOpMode_OriSquirrely extends OpMode
 {
     // Declare OpMode members.
@@ -64,7 +66,10 @@ public class TeleOpMode_OriSquirrely extends OpMode
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
     private Servo gripper = null;
+    private Servo arm = null;
     private boolean debug;
+    private double armPos = 0;
+    private double armChange = 0;
     private double gripperPos = 0;
     private double gripperChange = 0;
 
@@ -84,12 +89,13 @@ public class TeleOpMode_OriSquirrely extends OpMode
             leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
             gripper = hardwareMap.get(Servo.class, "gripper");
+            arm = hardwareMap.get(Servo.class, "arm");
 
-            leftfrontDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
             leftfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
             rightfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            leftbackDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
             leftbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
             rightbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -134,8 +140,8 @@ public class TeleOpMode_OriSquirrely extends OpMode
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
-        double powerY;
-        double powerX;
+        double powerLeftY;
+        double powerRightX;
         double powerLeftX;
         double powerLeftFront = 0;
         double powerRightFront = 0;
@@ -146,23 +152,39 @@ public class TeleOpMode_OriSquirrely extends OpMode
         double powerMax = 1;
         boolean padRight = false;
         boolean padLeft = false;
+        boolean triggerLeft = false;
+        boolean bumperLeft = false;
         double gripperIncrement = .01;
 
-        powerY  = gamepad1.left_stick_y;
-        powerX = -gamepad1.right_stick_x;
+
+        powerLeftY  = -gamepad1.left_stick_y;
+        powerRightX = -gamepad1.right_stick_x;
         powerLeftX = gamepad1.left_stick_x;
         padLeft = gamepad1.dpad_left;
         padRight = gamepad1.dpad_right;
+        triggerLeft = gamepad1.right_bumper;
+        bumperLeft = gamepad1.left_bumper;
+        powerLeftX = scaleInput(powerLeftX, powerMax);
+        powerRightX = scaleInput(powerRightX, powerMax);
+        powerLeftY = scaleInput(powerLeftY, powerMax);
 
         powerMax = Collections.max(Arrays.asList(powerMax, powerLeftFront, powerLeftBack, powerRightFront, powerRightBack, powerLeftX));
 
-        boolean allZero = (abs(powerX) == 0) && (abs(powerY) == 0) && (abs(powerLeftX) == 0);
-        double powerTotal = (abs(powerX) + abs(powerY) + abs(powerLeftX)) > powerMax ? (abs(powerX) + abs(powerY) + abs(powerLeftX)) : powerMax;
+        boolean allZero = (abs(powerRightX) == 0) && (abs(powerLeftY) == 0) && (abs(powerLeftX) == 0);
+        double powerTotal = (abs(powerRightX) + abs(powerLeftY) + abs(powerLeftX)) > powerMax ? (abs(powerRightX) + abs(powerLeftY) + abs(powerLeftX)) : powerMax;
 
-        powerLeftFront = allZero ? 0 : ((powerX + powerY + powerLeftX) / (powerTotal * powerMax));
-        powerLeftBack = allZero ? 0 : ((powerX + powerY - powerLeftX) / (powerTotal * powerMax));
-        powerRightFront = allZero ? 0 : ((powerX - powerY - powerLeftX) / (powerTotal * powerMax));
-        powerRightBack = allZero ? 0 : ((powerX - powerY + powerLeftX) / (powerTotal * powerMax));
+        powerLeftFront = allZero ? 0 : ((-powerRightX + powerLeftY + powerLeftX) / (powerTotal * powerMax));
+        powerLeftBack = allZero ? 0 : ((-powerRightX + powerLeftY - powerLeftX) / (powerTotal * powerMax));
+        powerRightFront = allZero ? 0 : ((powerRightX + powerLeftY - powerLeftX) / (powerTotal * powerMax));
+        powerRightBack = allZero ? 0 : ((powerRightX + powerLeftY + powerLeftX) / (powerTotal * powerMax));
+
+        if (triggerLeft && armPos > 0) {
+            armChange = -gripperIncrement;
+        }
+
+        else if (bumperLeft && armPos <= 1){
+            armChange = gripperIncrement;
+        }
 
         if (padLeft) {
             gripperChange = -gripperIncrement;
@@ -177,6 +199,7 @@ public class TeleOpMode_OriSquirrely extends OpMode
         }
 
         gripperPos = gripperPos + gripperChange;
+        armPos = armPos + armChange;
 
         gripperPos = gripperPos > 1 ? 1 : gripperPos < 0 ? 0 : gripperPos;
 
@@ -187,6 +210,7 @@ public class TeleOpMode_OriSquirrely extends OpMode
             leftbackDrive.setPower(powerLeftBack);
             rightbackDrive.setPower(powerRightBack);
             gripper.setPosition(gripperPos);
+            arm.setPosition(armPos);
         }
 
         // Show the elapsed game time and wheel power.
@@ -195,6 +219,12 @@ public class TeleOpMode_OriSquirrely extends OpMode
         telemetry.addData("padRight", padRight);
         telemetry.addData("padLeft", padLeft);
         telemetry.addData("gripperPos", gripperPos);
+        telemetry.addData("powerMax", powerMax);
+        telemetry.addData("allZero", allZero);
+        telemetry.addData("powerTotal", powerTotal);
+        telemetry.addData("powerLeftX", powerLeftX);
+        telemetry.addData("powerRightX", powerRightX);
+        telemetry.addData("powerLeftY", powerLeftY);
     }
 
     /*
@@ -204,4 +234,7 @@ public class TeleOpMode_OriSquirrely extends OpMode
     public void stop() {
     }
 
+    double scaleInput(double dVal, double max_controller)  {
+        return pow(dVal, 3)/pow(max_controller, 3);
+    }
 }
