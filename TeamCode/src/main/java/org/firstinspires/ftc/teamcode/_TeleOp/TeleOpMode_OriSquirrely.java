@@ -120,7 +120,7 @@ public class TeleOpMode_OriSquirrely extends OpMode
         if (!debug) {
             leftfrontDrive.setPower(0);
             rightfrontDrive.setPower(0);
-            leftbackDrive.setPower(0);c
+            leftbackDrive.setPower(0);
             rightbackDrive.setPower(0);
         }
         gripperChange = 0;
