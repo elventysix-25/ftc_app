@@ -119,7 +119,7 @@ public class  TeleOpMode_Ori extends OpMode
         if (!debug) {
             leftfrontDrive.setPower(0);
             rightfrontDrive.setPower(0);
-            leftbackDrive.setPower(0);
+            leftbackDrive.setPower(0);c
             rightbackDrive.setPower(0);
         }
         gripperChange = 0;
