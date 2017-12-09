@@ -34,6 +34,9 @@ public class blueOp extends LinearOpMode{
         for(DcMotor[] motor : motors){
             motor[1].setDirection(DcMotor.Direction.FORWARD);
         }
+        telemetry.addData("Luminosity", colorSensor.alpha());
+        telemetry.addData("Red sensor", colorSensor.red());
+        telemetry.addData("Blue sensor", colorSensor.blue());
 
         waitForStart();
 
@@ -47,9 +50,7 @@ public class blueOp extends LinearOpMode{
 
         while(runtime.seconds()<2);
 
-        telemetry.addData("Luminosity", colorSensor.alpha());
-        telemetry.addData("Red sensor", colorSensor.red());
-        telemetry.addData("Blue sensor", colorSensor.blue());
+
         runtime.reset();
         if(colorSensor.blue() - colorSensor.red() >= 0){
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
@@ -58,9 +59,9 @@ public class blueOp extends LinearOpMode{
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(-50);
+                    motor[0].setPower(-5);
                     // Set right motor power
-                    motor[1].setPower(50);
+                    motor[1].setPower(5);
                 }
             }
             runtime.reset();
@@ -72,9 +73,9 @@ public class blueOp extends LinearOpMode{
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(50);
+                    motor[0].setPower(5);
                     // Set right motor power
-                    motor[1].setPower(-50);
+                    motor[1].setPower(-5);
                 }
             }
         }
@@ -85,9 +86,9 @@ public class blueOp extends LinearOpMode{
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(50);
+                    motor[0].setPower(5);
                     // Set right motor power
-                    motor[1].setPower(-50);
+                    motor[1].setPower(-5);
                 }
             }
             runtime.reset();
@@ -99,9 +100,9 @@ public class blueOp extends LinearOpMode{
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(-50);
+                    motor[0].setPower(-5);
                     // Set right motor power
-                    motor[1].setPower(50);
+                    motor[1].setPower(5);
                 }
             }
         }
@@ -122,7 +123,7 @@ public class blueOp extends LinearOpMode{
             }
         }
 
-        /*runtime.reset();
+        runtime.reset();
         while(runtime.milliseconds()<570){
             //Loop through front and back motors
             for(DcMotor[] motor : motors){
@@ -131,7 +132,7 @@ public class blueOp extends LinearOpMode{
                 //  Set right motor power
                 motor[1].setPower(-100);
             }
-        }*/
+        }
 
         runtime.reset();
         // Loop through front and back motors

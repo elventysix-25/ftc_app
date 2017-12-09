@@ -54,13 +54,13 @@ public class redOp extends LinearOpMode{
         if(colorSensor.blue() - colorSensor.red() >= 0){
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<700){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(50);
+                    motor[0].setPower(5);
                     // Set right motor power
-                    motor[1].setPower(-50);
+                    motor[1].setPower(-5);
                 }
             }
             runtime.reset();
@@ -68,26 +68,26 @@ public class redOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<700){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(-50);
+                    motor[0].setPower(-5);
                     // Set right motor power
-                    motor[1].setPower(50);
+                    motor[1].setPower(5);
                 }
             }
         }
         else if(colorSensor.red() - colorSensor.blue() >= 20){
             telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<700){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(-50);
+                    motor[0].setPower(-5);
                     // Set right motor power
-                    motor[1].setPower(50);
+                    motor[1].setPower(5);
                 }
             }
             runtime.reset();
@@ -95,13 +95,13 @@ public class redOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<700){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
-                    motor[0].setPower(50);
+                    motor[0].setPower(5);
                     // Set right motor power
-                    motor[1].setPower(-50);
+                    motor[1].setPower(-5);
                 }
             }
         }
