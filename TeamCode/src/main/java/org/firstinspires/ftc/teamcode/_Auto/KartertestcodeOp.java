@@ -31,7 +31,7 @@ public class KartertestcodeOp extends OpMode {
         catch (IllegalArgumentException iax) {
             bDebug = true;
         }
-        bDone = false;
+        bDebug  = false;
     }
 
     /*
