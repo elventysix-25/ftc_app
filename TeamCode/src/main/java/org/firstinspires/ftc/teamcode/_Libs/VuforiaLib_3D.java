@@ -87,72 +87,61 @@ import java.util.concurrent.BlockingQueue;
 
 // we need to break into the "impl" class to get access to its close() function so we can
 // really shut it down and get back control of the camera
-class myVuforiaLocalizerImpl extends VuforiaLocalizerImpl
+class myVuforiaLocalizerImpl2 extends VuforiaLocalizerImpl
 {
-    public myVuforiaLocalizerImpl(VuforiaLocalizer.Parameters parameters)
+    public myVuforiaLocalizerImpl2(VuforiaLocalizer.Parameters parameters)
     {
         super(parameters);
     }
     public void _close()  { close(); }
 }
 
-public class VuforiaLib_FTC2017 implements HeadingSensor, LocationSensor {
+public class VuforiaLib_3D implements HeadingSensor, LocationSensor {
 
-    myVuforiaLocalizerImpl vuforia;
-    VuforiaTrackables relicTrackables = null;
-    VuforiaTrackable relicTemplate;
-
-    RelicRecoveryVuMark mVuMark = null;
+    myVuforiaLocalizerImpl2 vuforia;
+    VuforiaTrackables mTrackables = null;
     OpenGLMatrix mLastLocation = null;
+    VuforiaTrackable mLastVisible = null;
 
     OpMode mOpMode;
 
     BlockingQueue<VuforiaLocalizer.CloseableFrame> mFrameQueue;
     VuforiaLocalizer.CloseableFrame mCF;
 
-    public void init(OpMode opMode, String licenseKey) {
+    public void init(OpMode opMode, String licenseKey, String database, String names[]) {
 
         // remember this so we can do telemetry output
         mOpMode = opMode;
 
-        /**
-         * Start up Vuforia, telling it the id of the view that we wish to use as the parent for
-         * the camera monitor feedback; if no camera monitor feedback is desired, use the parameterless
-         * constructor instead. We also indicate which camera on the RC that we wish to use. For illustration
-         * purposes here, we choose the back camera; for a competition robot, the front camera might
-         * prove to be more convenient.
-         *
-         * Note that in addition to indicating which camera is in use, we also need to tell the system
-         * the location of the phone on the robot; see phoneLocationOnRobot below.
-         *
-         * IMPORTANT: You should obtain your own license key to use Vuforia. The string below with which
-         * 'parameters.vuforiaLicenseKey' is initialized is valid and will function, but better to get your own.
-         * Vuforia will not load without a valid license being provided. Vuforia 'Development' license
-         * keys, which is what is needed here, can be obtained free of charge from the Vuforia developer
-         * web site at https://developer.vuforia.com/license-manager.
-         *
-         * Valid Vuforia license keys are always 380 characters long, and look as if they contain mostly
-         * random data. As an example, here is a example of a fragment of a valid key:
-         *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
-         * Once you've obtained a license key, copy the string form of the key from the Vuforia web site
-         * and paste it in to your code as the value of the 'vuforiaLicenseKey' field of the
-         * {@link Parameters} instance with which you initialize Vuforia.
-         */
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
         parameters.vuforiaLicenseKey =
                 (licenseKey != null && licenseKey.length() > 0) ? licenseKey :
                 "ARf809H/////AAAAGRswBQwUCUJ5nqfgZxGbDEQ8oO7YP5GdnbReYr8ZHinqQ74OsP7UdOxNZJDmhaF2OeGD20jpSexpr2CcXGSGuHXNB2p9Z6zUNLDTfEggL+yg4ujefoqdkSpCqZf1medpwh3KXcK76FcfSJuqEudik2PC6kQW/cqJXnnHofVrrDTzJmWMnK3hlqTMjig81DEPMAHbRnA5wn7Eu0irnmqqboWyOlQ0xTF+P4LVuxaOUFlQC8zPqkr1Gvzvix45paWtyuLCnS9YDWMvI1jIM4giMrTRCT0lG8F+vkuKMiK647KJp9QIsFdWQ0ecQhau3ODNQ03pcTzprVN72b9VObpv6FNBpjGKRAcA59xlZiM2l6fc";
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        this.vuforia = new myVuforiaLocalizerImpl(parameters); // ClassFactory.createVuforiaLocalizer(parameters);
+        this.vuforia = new myVuforiaLocalizerImpl2(parameters); // ClassFactory.createVuforiaLocalizer(parameters);
 
         /**
          * Load the data sets that for the trackable objects we wish to track. These particular data
          * sets are stored in the 'assets' part of our application (you'll see them in the Android
          * Studio 'Project' view over there on the left of the screen).
          */
-        relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-        relicTemplate = relicTrackables.get(0);
-        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+        mTrackables = this.vuforia.loadTrackablesFromAsset(database);
+        int i = 0;
+        for (VuforiaTrackable t : mTrackables) {
+            mTrackables.get(i).setName(names[i]);
+            if (i < names.length-1)
+                i++;
+        }
+
+        // assign an arbitrary field transformation to all Trackables so we can get position info relative to them
+        for (VuforiaTrackable t : mTrackables) {
+            OpenGLMatrix wheelsTargetLocationOnField = OpenGLMatrix
+                    .translation(0, 0, 0)
+                    .multiplied(Orientation.getRotationMatrix(
+                            AxesReference.EXTRINSIC, AxesOrder.XZX,
+                            AngleUnit.DEGREES, 90, 0, 0));
+            t.setLocation(wheelsTargetLocationOnField);
+        }
 
         /**
          * Create a transformation matrix describing where the phone is on the robot. Here, we
@@ -176,7 +165,9 @@ public class VuforiaLib_FTC2017 implements HeadingSensor, LocationSensor {
          * listener is a {@link VuforiaTrackableDefaultListener} and can so safely cast because
          * we have not ourselves installed a listener of a different type.
          */
-        ((VuforiaTrackableDefaultListener) relicTemplate.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
+        for (VuforiaTrackable t : mTrackables) {
+            ((VuforiaTrackableDefaultListener)t.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
+        }
 
         // get access to video frames so we can do other processing like looking for red/blue beacons
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true); //enables RGB format for the image
@@ -189,33 +180,44 @@ public class VuforiaLib_FTC2017 implements HeadingSensor, LocationSensor {
     public void start()
     {
         /** Start tracking the data sets we care about. */
-        relicTrackables.activate();
+        mTrackables.activate();
     }
 
     public void loop()
     {
-        /**
-         * See if any of the instances of {@link relicTemplate} are currently visible.
-         * {@link RelicRecoveryVuMark} is an enum which can have the following values:
-         * UNKNOWN, LEFT, CENTER, and RIGHT. When a VuMark is visible, something other than
-         * UNKNOWN will be returned by {@link RelicRecoveryVuMark#from(VuforiaTrackable)}.
-         */
-        mVuMark = RelicRecoveryVuMark.from(relicTemplate);
-        mLastLocation = ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).getPose();
+        mLastLocation = null;    // reset each time so we can tell if we currently have any target visible
+
+        for (VuforiaTrackable t : mTrackables) {
+
+            if (((VuforiaTrackableDefaultListener)t.getListener()).isVisible())
+                mLastVisible = t;
+
+            /**
+             * getUpdatedRobotLocation() will return null if no new information is available since
+             * the last time that call was made, or if the trackable is not currently visible.
+             * getRobotLocation() will return null if the trackable is not currently visible.
+             */
+            OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)t.getListener()).getRobotLocation();
+            if (robotLocationTransform != null) {
+                mLastLocation = robotLocationTransform;
+            }
+        }
     }
 
 
     public void stop()
     {
         /** Stop tracking the data sets we care about. */
-        relicTrackables.deactivate();
+        mTrackables.deactivate();
 
         // close down Vuforia NOW so other code can use the camera
         vuforia._close();
     }
 
-    // return last recognized sign
-    public RelicRecoveryVuMark getVuMark() { return mVuMark; }
+    // return name of last detected Trackable
+    public String getName() {
+        return mLastVisible != null ? mLastVisible.getName() : "none";
+    }
 
     // return lastLocation matrix (may be null)
     public OpenGLMatrix getLastLocation()

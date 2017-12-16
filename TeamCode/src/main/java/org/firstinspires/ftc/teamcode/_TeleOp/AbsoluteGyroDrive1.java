@@ -81,19 +81,28 @@ public class  AbsoluteGyroDrive1 extends OpMode {
 		 *   "fr" and "br" are front and back right wheels
 		 */
 		try {
+			AutoLib.HardwareFactory mf = null;
+			final boolean debug = true;
+			if (debug)
+				mf = new AutoLib.TestHardwareFactory(this);
+			else
+				mf = new AutoLib.RealHardwareFactory(this);
+
+			// get the motors: depending on the factory we created above, these may be
+			// either dummy motors that just log data or real ones that drive the hardware
+			// assumed order is fr, br, fl, bl
 			mMotors = new DcMotor[4];
-			mMotors[0] = hardwareMap.dcMotor.get("fr");
-			(mMotors[1] = hardwareMap.dcMotor.get("fl")).setDirection(DcMotor.Direction.REVERSE);
-			mMotors[2] = hardwareMap.dcMotor.get("br");
-			(mMotors[3] = hardwareMap.dcMotor.get("bl")).setDirection(DcMotor.Direction.REVERSE);
+			mMotors[0] = mf.getDcMotor("fr");
+			mMotors[1] = mf.getDcMotor("br");
+			(mMotors[2] = mf.getDcMotor("fl")).setDirection(DcMotor.Direction.REVERSE);
+			(mMotors[3] = mf.getDcMotor("bl")).setDirection(DcMotor.Direction.REVERSE);
 
 			// get hardware gyro
-			mGyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+			mGyro = (ModernRoboticsI2cGyro) mf.getGyro("gyro");
 
 			// wrap gyro in an object that calibrates it and corrects its output
 			mCorrGyro = new SensorLib.CorrectedMRGyro(mGyro);
 			mCorrGyro.calibrate();
-
 		}
 		catch (IllegalArgumentException iax) {
 			bDebug = true;
@@ -116,15 +125,19 @@ public class  AbsoluteGyroDrive1 extends OpMode {
 		float dx = gamepad1.left_stick_x;
 		float dy = -gamepad1.left_stick_y;	// y is reversed :(
 
-		// direction angle of stick >> the direction we want to move
-		double heading = Math.atan2(-dx, dy);	// stick angle: zero = +y, positive CCW, range +-pi
-		heading *= 180.0/Math.PI;		// radians to degrees
-
 		// power is the magnitude of the direction vector
 		double power = Math.sqrt(dx*dx + dy*dy);
 
-		// update the control step we're using to control the motors and then run it
-		mStep.set((float)heading, (float)power);
+		// don't update direction when it's essentially undefined (zero inputs)
+		final double MIN_INPUT = 0.1;
+		if (power > MIN_INPUT) {
+			// direction angle of stick >> the direction we want to move
+			double heading = Math.atan2(-dx, dy);    // stick angle: zero = +y, positive CCW, range +-pi
+			heading *= 180.0 / Math.PI;        // radians to degrees
+
+			// update the control step we're using to control the motors and then run it
+			mStep.set((float) heading, (float) power);
+		}
 		mStep.loop();
 	}
 

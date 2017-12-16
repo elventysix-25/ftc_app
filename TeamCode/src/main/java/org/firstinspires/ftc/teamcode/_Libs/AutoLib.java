@@ -202,6 +202,35 @@ public class AutoLib {
         }
     }
 
+    // a Step that waits until a given test Step has returned true for a given length of time.
+    // e.g. if you want to turn to a given heading, you might wait until a "read gyro" step (like GyroTestHeadingStep)
+    // has reported that you're within 3 degrees of a given heading for 1 second to make
+    // sure you've actually settled at that heading and aren't just "passing through it".
+    static public class WaitTimeTestStep extends Step {
+        Step mTest;         // the "test" Step
+        Timer mTimer;       // Timer for this Step
+
+        public WaitTimeTestStep(Step test, double seconds) {
+            mTest = test;
+            mTimer = new Timer(seconds);
+        }
+
+        public boolean loop() {
+            super.loop();
+
+            // start the Timer on our first call
+            if (firstLoopCall())
+                mTimer.start();
+
+            // if the test Step fails, restart the Timer; else let it keep running
+            if (!mTest.loop())
+                mTimer.start();
+
+            // return true when time is exhausted --
+            // i.e. when the Test has succeeded continuously for the given time
+            return (mTimer.done());
+        }
+    }
 
     // ------------------ some implementations of primitive Steps ----------------------------
 
@@ -365,32 +394,36 @@ public class AutoLib {
     }
 
     // a Step that drives a Servo to a given position
+    // it would be nice if we got actual position info back from the servo, but that's not
+    // how it works, so we just wait long enough for it to probably get where it's told to go.
     static public class ServoStep extends Step {
         Servo mServo;
         double mPosition;          // target position of servo
-        double mTolerance;
+        Timer mTimer;              // Timer for this Step
 
         public ServoStep(Servo servo, double position) {
             mServo = servo;
             mPosition = position;
-            mTolerance = 0.01;      // 1% of default 0..1 range
-        }
-
-        // if servo is set to non-default range, set tolerance here
-        public void setTolerance(double tolerance) {
-            mTolerance = tolerance;
+            mTimer = null;
         }
 
         public boolean loop() {
             super.loop();
 
-            // tell the servo to go to the target position on the first call
             if (firstLoopCall()) {
+                // tell the servo to go to the target position on the first call
                 mServo.setPosition(mPosition);
+
+                // and start a timer that estimates when the motion will complete
+                // assuming servo goes at about 300 degrees/sec and 0..1 range is about 180 degrees
+                double seconds = (mPosition-mServo.getPosition());
+                mTimer = new Timer(seconds);
+                mTimer.start();
             }
 
-            // we're done when the servo gets to the ordered position (within tolerance)
-            boolean done = Math.abs(mPosition-mServo.getPosition()) < mTolerance;
+            // we're done when we've waited long enough for
+            // the servo to (probably) get to the ordered position
+            boolean done = mTimer.done();
 
             return done;
         }
@@ -451,10 +484,20 @@ public class AutoLib {
 
     // some Steps that use various sensor input to control other Steps
 
+    // interface for setting the current power of either kind of MotorStep
+    public interface SetMotorSteps {
+        public void set(ArrayList<AutoLib.SetPower> motorsteps);
+    }
+
+    static public abstract class MotorGuideStep extends AutoLib.Step implements SetMotorSteps {
+        public void set(ArrayList<AutoLib.SetPower> motorsteps){}
+    }
+
+
     // a Step that provides gyro-based guidance to motors controlled by other concurrent Steps (e.g. encoder or time-based)
     // assumes an even number of concurrent drive motor steps in order right ..., left ...
     // this step tries to keep the robot on the given course by adjusting the left vs. right motors to change the robot's heading.
-    static public class GyroGuideStep extends Step {
+    static public class GyroGuideStep extends MotorGuideStep {
         private float mPower;                               // basic power setting of all 4 motors -- adjusted for steering along path
         private float mHeading;                             // compass heading to steer for (-180 .. +180 degrees)
         private OpMode mOpMode;                             // needed so we can log output (may be null)
@@ -469,9 +512,24 @@ public class AutoLib {
             mOpMode = mode;
             mHeading = heading;
             mGyro = gyro;
-            mPid = pid;
+            if (pid != null)
+                mPid = pid;     // client is supplying PID controller for correcting heading errors
+            else {
+                // construct a default PID controller for correcting heading errors
+                final float Kp = 0.05f;        // degree heading proportional term correction per degree of deviation
+                final float Ki = 0.02f;        // ... integrator term
+                final float Kd = 0.0f;         // ... derivative term
+                final float KiCutoff = 3.0f;   // maximum angle error for which we update integrator
+                mPid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
+            }
             mMotorSteps = motorsteps;
             mPower = power;
+        }
+
+        // set motor control steps this step should control (assumes ctor called with null argument)
+        public void set(ArrayList<AutoLib.SetPower> motorsteps)
+        {
+            mMotorSteps = motorsteps;
         }
 
         public boolean loop()
@@ -563,8 +621,31 @@ public class AutoLib {
         }
     }
 
+    // a Step that returns true iff the given HeadingSensor reports a heading within some tolerance of a desired heading.
+    static public class GyroTestHeadingStep extends Step {
+        private HeadingSensor mSensor;
+        private double mHeading;
+        private double mTolerance;
+
+        public GyroTestHeadingStep(HeadingSensor sensor, double heading, double tol){
+            mSensor = sensor;
+            mHeading = heading;
+            mTolerance = tol;
+        }
+
+        public boolean loop() {
+            super.loop();
+
+            if (mSensor.haveHeading())
+                return (Math.abs(mSensor.getHeading()-mHeading) < mTolerance);
+            else
+                return false;
+        }
+    }
+
     // a Step that stops the given set of motor control steps and terminates
-    // when the given DistanceSensor reports less than a given distance (in mm)
+    // when the given DistanceSensor reports less than a given distance (in mm).
+    // pass in an empty set of motors to just do the test (e.g. for use with WaitTimeTestStep).
     static public class DistanceSensorGuideStep extends Step {
 
         private OpMode mOpMode;                     // for telemetry output (optional)
@@ -597,38 +678,32 @@ public class AutoLib {
         }
     }
 
-    // interface for setting the current power of either kind of MotorStep
-    public interface SetMotorSteps {
-        public void set(ArrayList<AutoLib.SetPower> motorsteps);
-    }
-
-    static public abstract class MotorGuideStep extends AutoLib.Step implements SetMotorSteps {
-        public void set(ArrayList<AutoLib.SetPower> motorsteps){}
-    }
-
     // a generic Step that uses a MotorGuideStep to steer the robot while driving along a given path
     // until the terminatorStep tells us that we're there, thereby terminating this step.
     static public class GuidedTerminatedDriveStep extends AutoLib.ConcurrentSequence {
 
-        public GuidedTerminatedDriveStep(OpMode mode, AutoLib.MotorGuideStep guideStep, AutoLib.Step terminatorStep, DcMotor[] motors)
+        public GuidedTerminatedDriveStep(OpMode mode, AutoLib.MotorGuideStep guideStep, AutoLib.MotorGuideStep terminatorStep, DcMotor[] motors)
         {
             // add a concurrent Step to control each motor
             ArrayList<AutoLib.SetPower> steps = new ArrayList<AutoLib.SetPower>();
             for (DcMotor em : motors)
                 if (em != null) {
                     AutoLib.TimedMotorStep step = new AutoLib.TimedMotorStep(em, 0, 0, false);
-                    // the terminatorStep will stop the motors and complete the sequence
+                    // the guide or terminator Step will stop the motors and complete the sequence
                     this.add(step);
                     steps.add(step);
                 }
 
-            // add a concurrent Step that terminates the whole sequence when we're "there"
-            this.preAdd(terminatorStep);
+            // if there's a separate terminator step, tell it about the motor steps and add it to the sequence
+            if (terminatorStep != null) {
+                terminatorStep.set(steps);
+                this.preAdd(terminatorStep);
+            }
 
             // tell the guideStep about the motor Steps it should control
             guideStep.set(steps);
 
-            // add a concurrent Step to control the motor steps based on gyro input
+            // add a concurrent Step to control the motor steps based on sensor (gyro, camera, etc.) input
             // put it at the front of the list so it can update the motors BEFORE their steps run
             // and BEFORE the terminatorStep might try to turn the motors off.
             this.preAdd(guideStep);
@@ -661,7 +736,7 @@ public class AutoLib {
             mDirection = direction;
             mHeading = heading;
             mGyro = gyro;
-            if (mPid != null)
+            if (pid != null)
                 mPid = pid;     // client is supplying PID controller for correcting heading errors
             else {
                 // construct a default PID controller for correcting heading errors
