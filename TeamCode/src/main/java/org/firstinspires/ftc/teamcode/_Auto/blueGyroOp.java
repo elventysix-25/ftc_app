@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode._Auto;
+/*package org.firstinspires.ftc.teamcode._Auto;
 
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -7,8 +8,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+
+import java.util.Locale;
 @Autonomous(name="blueOp", group="Autonomous")
-public class blueOp extends LinearOpMode{
+public class blueGyroOp extends LinearOpMode{
     private ElapsedTime runtime = new ElapsedTime();
     // Declare the motor matrix
     private DcMotor[][] motors = new DcMotor[2][2];
@@ -16,6 +26,12 @@ public class blueOp extends LinearOpMode{
     private float motorPower = 1.f;
     private Servo servo = null;
     private ColorSensor colorSensor;
+
+    // The IMU sensor object
+    BNO055IMU imu;
+
+    Orientation angles;
+
 
     @Override
     public void runOpMode(){
@@ -25,7 +41,27 @@ public class blueOp extends LinearOpMode{
         motors[1][0] = hardwareMap.dcMotor.get("backLeft");
         motors[1][1] = hardwareMap.dcMotor.get("backRight");
         servo = hardwareMap.get(Servo.class, "arm");
-        colorSensor = hardwareMap.colorSensor.get("colorSensor");
+        colorSensor=hardwareMap.colorSensor.get("colorSensor");
+
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+
         // The motors on the left side of the robot need to be in reverse mode
         for(DcMotor[] motor : motors){
             motor[0].setDirection(DcMotor.Direction.REVERSE);
@@ -34,6 +70,9 @@ public class blueOp extends LinearOpMode{
         for(DcMotor[] motor : motors){
             motor[1].setDirection(DcMotor.Direction.FORWARD);
         }
+        telemetry.addData("Luminosity", colorSensor.alpha());
+        telemetry.addData("Red sensor", colorSensor.red());
+        telemetry.addData("Blue sensor", colorSensor.blue());
 
         waitForStart();
 
@@ -47,14 +86,16 @@ public class blueOp extends LinearOpMode{
 
         while(runtime.seconds()<2);
 
+        Orientation angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
 
         runtime.reset();
         if(colorSensor.blue() - colorSensor.red() >= 0){
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
             runtime.reset();
-            while(runtime.milliseconds()<1600){
-                // Loop through front and back motors
-                for(DcMotor[] motor : motors){
+            while(formatAngle(angles.angleUnit, angles)){
+                for(DcMotor[] motor : motor.firstAngle)){
+                    // Loop through front and back motorss){
                     // Set left motor power
                     motor[0].setPower(-5);
                     // Set right motor power
@@ -140,4 +181,13 @@ public class blueOp extends LinearOpMode{
             motor[1].setPower(0);
         }
     }
+
+    String formatAngle(AngleUnit angleUnit, double angle) {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    String formatDegrees(double degrees){
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
 }
+*/
