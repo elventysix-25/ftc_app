@@ -54,7 +54,7 @@ public class redOp extends LinearOpMode{
         if(colorSensor.blue() - colorSensor.red() >= 0){
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
             runtime.reset();
-            while(runtime.milliseconds()<700){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -68,7 +68,7 @@ public class redOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(runtime.milliseconds()<700){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -81,7 +81,7 @@ public class redOp extends LinearOpMode{
         else if(colorSensor.red() - colorSensor.blue() >= 20){
             telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
             runtime.reset();
-            while(runtime.milliseconds()<700){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -95,7 +95,7 @@ public class redOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(runtime.milliseconds()<700){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power

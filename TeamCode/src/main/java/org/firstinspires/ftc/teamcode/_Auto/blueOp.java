@@ -37,7 +37,7 @@ public class blueOp extends LinearOpMode{
 
         waitForStart();
 
-        //Kill ten seconds
+        //Kill ten seconds. -9. thats 1. quick maths
         runtime.reset();
         while(runtime.seconds()<1);
         runtime.reset();
@@ -52,7 +52,7 @@ public class blueOp extends LinearOpMode{
         if(colorSensor.blue() - colorSensor.red() >= 0){
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -66,7 +66,7 @@ public class blueOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -79,7 +79,7 @@ public class blueOp extends LinearOpMode{
         else if(colorSensor.red() - colorSensor.blue() >= 20){
             telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -93,7 +93,7 @@ public class blueOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(runtime.milliseconds()<1600){
+            while(runtime.milliseconds()<600){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
