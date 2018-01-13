@@ -69,6 +69,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
     public void init() {
         x = 0;
         triggerSet = 0;
+        //hell Karter, this is your computer and I wrote this on 1/10/18, 8:06 PM
 
         try {
             leftfrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");

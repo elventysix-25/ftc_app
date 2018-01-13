@@ -97,7 +97,7 @@ public class redOp extends LinearOpMode{
             runtime.reset();
             while(runtime.milliseconds()<600){
                 // Loop through front and back motors
-                for(DcMotor[] motor : motors){
+            for(DcMotor[] motor : motors){
                     // Set left motor power
                     motor[0].setPower(5);
                     // Set right motor power
