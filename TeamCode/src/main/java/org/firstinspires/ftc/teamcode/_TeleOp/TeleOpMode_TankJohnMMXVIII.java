@@ -6,6 +6,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 //import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -38,7 +39,6 @@ import java.util.Locale;
 @TeleOp(name="TeleOpMode_TankJohnMMXVIII", group="Iterative Opmode")
 public class TeleOpMode_TankJohnMMXVIII extends OpMode
 {
-    private boolean debug = true;
     private boolean debugLeftFrontDrive = false;
     private boolean debugRightFrontDrive = false;
     private boolean debugLeftBackDrive = false;
@@ -72,7 +72,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
 
         try {
             leftfrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-            leftfrontDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
         }
         catch (IllegalArgumentException iax) {
             debugLeftFrontDrive = true;
@@ -80,7 +80,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
         }
         try{
             rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
-            rightfrontDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
         }
         catch (IllegalArgumentException iax) {
             debugRightFrontDrive = true;
@@ -88,7 +88,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
         }
         try{
             leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-            leftbackDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
         }
         catch (IllegalArgumentException iax) {
             debugLeftBackDrive = true;
@@ -96,7 +96,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
         }
         try{
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
-            rightbackDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
         }
         catch (IllegalArgumentException iax) {
             debugRightBackDrive = true;

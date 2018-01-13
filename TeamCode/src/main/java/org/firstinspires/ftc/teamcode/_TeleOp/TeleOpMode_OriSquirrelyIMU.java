@@ -82,6 +82,22 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
     private double gripperPos = 0;
     private double gripperChange = 0;
     private BNO055IMU imu;
+    private Servo gripperLeft;
+    private Servo gripperRight;
+    private Servo gripperLift;
+    private Servo gripperTurn;
+
+    private boolean debugLeftFrontDrive = false;
+    private boolean debugRightFrontDrive = false;
+    private boolean debugLeftBackDrive = false;
+    private boolean debugRightBackDrive = false;
+    private boolean debugGripper = false;
+    private boolean debugArm = false;
+    private boolean debugImu = false;
+    private boolean debugGripperLeft = false;
+    private boolean debugGripperRight = false;
+    private boolean debugGripperLift = false;
+    private boolean debugGripperTurn = false;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -95,21 +111,55 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
         // step (using the FTC Robot Controller app on the phone).
         try {
             leftfrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-            rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
-            leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-            rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
-            gripper = hardwareMap.get(Servo.class, "gripper");
-            arm = hardwareMap.get(Servo.class, "arm");
-
             leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
             leftfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+        catch (IllegalArgumentException iax) {
+            debugLeftFrontDrive = true;
+            telemetry.addData("IllegalArgumentException", "frontLeft");
+        }
+        try{
+            rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
             rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
             rightfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+        catch (IllegalArgumentException iax) {
+            debugRightFrontDrive = true;
+            telemetry.addData("IllegalArgumentException", "frontRight");
+        }
+        try{
+            leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
             leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
             leftbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+        catch (IllegalArgumentException iax) {
+            debugLeftBackDrive = true;
+            telemetry.addData("IllegalArgumentException", "backLeft");
+        }
+        try{
+            rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
             rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
             rightbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        }
+        catch (IllegalArgumentException iax) {
+            debugRightBackDrive = true;
+            telemetry.addData("IllegalArgumentException", "backRight");
+        }
+        try{
+            gripper = hardwareMap.get(Servo.class, "gripper");
+        }
+        catch (IllegalArgumentException iax) {
+            debugGripper = true;
+            telemetry.addData("IllegalArgumentException", "gripper");
+        }
+        try{
+            arm = hardwareMap.get(Servo.class, "arm");
+        }
+        catch (IllegalArgumentException iax) {
+            debugArm = true;
+            telemetry.addData("IllegalArgumentException", "arm");
+        }
+        try {
             BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
             parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
             parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -122,10 +172,38 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
             imu.initialize(parameters);
             //gripper.setPosition(0);
         }
-        catch(IllegalArgumentException iax) {
-            debug = true;
+        catch (IllegalArgumentException iax) {
+            debugImu = true;
+            telemetry.addData("IllegalArgumentException", "imu");
         }
-
+        try{
+            gripperLeft = hardwareMap.get(Servo.class, "gripperLeft");
+        }
+        catch(IllegalArgumentException iax){
+            debugGripperLeft = true;
+            telemetry.addData("IllegalArgumentException", "gripperLeft");
+        }
+        try{
+            gripperRight = hardwareMap.get(Servo.class, "gripperRight");
+        }
+        catch(IllegalArgumentException iax){
+            debugGripperRight = true;
+            telemetry.addData("IllegalArgumentException", "gripperRight");
+        }
+        try{
+            gripperLift = hardwareMap.get(Servo.class, "gripperLift");
+        }
+        catch(IllegalArgumentException iax){
+            debugGripperLift = true;
+            telemetry.addData("IllegalArgumentException", "gripperLift");
+        }
+        try{
+            gripperTurn = hardwareMap.get(Servo.class, "gripperTurn");
+        }
+        catch(IllegalArgumentException iax){
+            debugGripperTurn = true;
+            telemetry.addData("IllegalArgumentException", "gripperTurn");
+        }
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -138,12 +216,19 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
      */
     @Override
     public void init_loop() {
-        if (!debug) {
+        if (!debugLeftFrontDrive) {
             leftfrontDrive.setPower(0);
+        }
+        if(!debugRightFrontDrive){
             rightfrontDrive.setPower(0);
+        }
+        if(!debugLeftBackDrive){
             leftbackDrive.setPower(0);
+        }
+        if(!debugRightBackDrive){
             rightbackDrive.setPower(0);
         }
+
         gripperChange = 0;
     }
 
@@ -179,7 +264,7 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
         double gripperIncrement = .01;
 
 
-        powerLeftY  = -gamepad1.left_stick_y;
+        powerLeftY = -gamepad1.left_stick_y;
         powerRightX = -gamepad1.right_stick_x;
         powerLeftX = gamepad1.left_stick_x;
         padLeft = gamepad1.dpad_left;
@@ -202,21 +287,15 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
 
         if (triggerLeft && armPos > 0) {
             armChange = -gripperIncrement;
-        }
-
-        else if (bumperLeft && armPos <= 1){
+        } else if (bumperLeft && armPos <= 1) {
             armChange = gripperIncrement;
         }
 
         if (padLeft) {
             gripperChange = -gripperIncrement;
-        }
-
-        else if (padRight) {
+        } else if (padRight) {
             gripperChange = gripperIncrement;
-        }
-
-        else {
+        } else {
             gripperChange = 0;
         }
 
@@ -225,13 +304,22 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
 
         gripperPos = gripperPos > 1 ? 1 : gripperPos < 0 ? 0 : gripperPos;
 
-        if (!debug) {
-            // Send calculated power to wheels
+        if (!debugLeftFrontDrive) {
             leftfrontDrive.setPower(powerLeftFront);
+        }
+        if (!debugRightFrontDrive) {
             rightfrontDrive.setPower(powerRightFront);
+        }
+        if (!debugLeftBackDrive) {
             leftbackDrive.setPower(powerLeftBack);
+        }
+        if (!debugRightBackDrive) {
             rightbackDrive.setPower(powerRightBack);
+        }
+        if (!debugGripper) {
             gripper.setPosition(gripperPos);
+        }
+        if (!debugArm) {
             arm.setPosition(armPos);
         }
 
@@ -247,11 +335,13 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
         telemetry.addData("powerLeftX", powerLeftX);
         telemetry.addData("powerRightX", powerRightX);
         telemetry.addData("powerLeftY", powerLeftY);
-        final Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        telemetry.addLine()
-                .addData("status", imu.getSystemStatus().toShortString())
-                .addData("calib", imu.getCalibrationStatus().toString())
-                .addData("heading", formatAngle(angles.angleUnit, angles.firstAngle));
+        if (!debugImu) {
+            final Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            telemetry.addLine()
+                    .addData("status", imu.getSystemStatus().toShortString())
+                    .addData("calib", imu.getCalibrationStatus().toString())
+                    .addData("heading", formatAngle(angles.angleUnit, angles.firstAngle));
+        }
     }
 
     /*
