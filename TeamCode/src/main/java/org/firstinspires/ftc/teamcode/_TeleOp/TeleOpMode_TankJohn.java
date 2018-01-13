@@ -1,3 +1,32 @@
+/* Copyright (c) 2017 FIRST. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted (subject to the limitations in the disclaimer below) provided that
+ * the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of FIRST nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package org.firstinspires.ftc.teamcode._TeleOp;
 
 import android.graphics.Color;
@@ -36,18 +65,12 @@ import java.util.Locale;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOpMode_TankJohnMMXVIII", group="Iterative Opmode")
-public class TeleOpMode_TankJohnMMXVIII extends OpMode
+@TeleOp(name="TeleOpMode_TankJohn", group="Iterative Opmode")
+public class TeleOpMode_TankJohn extends OpMode
 {
-    private boolean debugLeftFrontDrive = false;
-    private boolean debugRightFrontDrive = false;
-    private boolean debugLeftBackDrive = false;
-    private boolean debugRightBackDrive = false;
-    private boolean debugServo = false;
-    private boolean debugServc2 = false;
-    private boolean debugColorSensor = false;
-    private boolean debugImu = false;
+    boolean debug = false;
 
+    // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftfrontDrive = null;
     private DcMotor rightfrontDrive = null;
@@ -55,9 +78,12 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
     private DcMotor rightbackDrive = null;
     private Servo servo = null;
     private Servo servo2 = null;
+    // private GyroSensor gyro = null;
     private ColorSensor colorSensor;
+    // private UltrasonicSensor distanceSensor = null;
 
-    private BNO055IMU imu;
+    // The IMU sensor object
+    BNO055IMU imu;
 
     private int x;
     private int triggerSet;
@@ -69,78 +95,57 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
     public void init() {
         x = 0;
         triggerSet = 0;
-        //hell Karter, this is your computer and I wrote this on 1/10/18, 8:06 PM
 
+        // Initialize the hardware variables. Note that the strings used here as parameters
+        // to 'get' must correspond to the names assigned during the robot configuration
+        // step (using the FTC Robot Controller app on the phone).
         try {
             leftfrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-            leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        }
-        catch (IllegalArgumentException iax) {
-            debugLeftFrontDrive = true;
-            telemetry.addData("IllegalArgumentException", "frontLeft");
-        }
-        try{
             rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
-            rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        }
-        catch (IllegalArgumentException iax) {
-            debugRightFrontDrive = true;
-            telemetry.addData("IllegalArgumentException", "frontRight");
-        }
-        try{
             leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-            leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
-        }
-        catch (IllegalArgumentException iax) {
-            debugLeftBackDrive = true;
-            telemetry.addData("IllegalArgumentException", "backLeft");
-        }
-        try{
             rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
-            rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
-        }
-        catch (IllegalArgumentException iax) {
-            debugRightBackDrive = true;
-            telemetry.addData("IllegalArgumentException", "backRight");
-        }
-        try{
             servo = hardwareMap.get(Servo.class, "gripper");
-        }
-        catch (IllegalArgumentException iax) {
-            debugServo = true;
-            telemetry.addData("IllegalArgumentException", "gripper");
-        }
-        try{
             servo2 = hardwareMap.get(Servo.class, "arm");
-        }
-        catch (IllegalArgumentException iax) {
-            debugServc2 = true;
-            telemetry.addData("IllegalArgumentException", "arm");
-        }
-        try{
+            //gyro = hardwareMap.get(GyroSensor.class, "gyro");
             colorSensor = hardwareMap.colorSensor.get("colorSensor");
-        }
-        catch (IllegalArgumentException iax) {
-            debugColorSensor = true;
-            telemetry.addData("IllegalArgumentException", "colorSensor");
-        }
-        try{
+
+            /*gyro.calibrate();
+
+            while(gyro.isCalibrating()){
+                try {Thread.sleep(100);}
+                    catch(Exception e){}
+            }*/
+
+            // Most robots need the motor on one side to be reversed to drive forward
+            // Reverse the motor that runs backwards when connected directly to the battery
+            leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
+
+            // Set up the parameters with which we will use our IMU. Note that integration
+            // algorithm here just reports accelerations to the logcat log; it doesn't actually
+            // provide positional information.
             BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
             parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
             parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-            parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+            parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
             parameters.loggingEnabled      = true;
             parameters.loggingTag          = "IMU";
             parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
+            // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+            // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+            // and named "imu".
             imu = hardwareMap.get(BNO055IMU.class, "imu");
             imu.initialize(parameters);
         }
         catch (IllegalArgumentException iax) {
-            debugImu = true;
-            telemetry.addData("IllegalArgumentException", "imu");
+            debug = true;
         }
 
+        //distanceSensor = hardwareMap.get(UltrasonicSensor.class, "distanceSensor");
+        // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
 
@@ -150,22 +155,12 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
     @Override
     public void init_loop() {
 
-        if(!debugLeftFrontDrive) {
+        if(!debug) {
             leftfrontDrive.setPower(0);
-        }
-        if(!debugRightFrontDrive) {
             rightfrontDrive.setPower(0);
-        }
-        if(!debugLeftBackDrive) {
             leftbackDrive.setPower(0);
-        }
-        if(!debugRightBackDrive) {
             rightbackDrive.setPower(0);
-        }
-        if(!debugServo) {
             servo.setPosition(0);
-        }
-        if(!debugServc2) {
             servo2.setPosition(0);
         }
     }
@@ -177,6 +172,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
     public void start() {
         runtime.reset();
 
+        // Start the logging of measured acceleration
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
     }
 
@@ -185,7 +181,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
      */
     @Override
     public void loop() {
-
+        // Setup a variable for each drive wheel to save power level for telemetry
         double leftFrontPower = 0;
         double leftRearPower = 0;
         double rightFrontPower = 0;
@@ -241,58 +237,52 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
         telemetry.addData("rightRearPower", rightRearPower);
         telemetry.addData("gripperPosition", gripper);
         telemetry.addData("armPosition", arm);
+        /*try {
+            telemetry.addData("gyro", gyro.getHeading());
+        }
+        catch (IllegalArgumentException iax) {
+            debug = true;
+        }*/
 
-        if(!debugColorSensor){
+        telemetry.addData("Luminosity", colorSensor.alpha());
+        telemetry.addData("Red sensor", colorSensor.red());
+        telemetry.addData("Blue sensor", colorSensor.blue());
 
-            telemetry.addData("Luminosity", colorSensor.alpha());
-            telemetry.addData("Red sensor", colorSensor.red());
-            telemetry.addData("Blue sensor", colorSensor.blue());
-
-            if (colorSensor.blue() - colorSensor.red() >= 0) {
-                telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
+        if(colorSensor.blue() - colorSensor.red() >= 0){
+            telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
+        }
+        else if(colorSensor.red() - colorSensor.blue() >= 20){
+            telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
+        }
+        else{
+            if(colorSensor.red() > colorSensor.blue()){
+                telemetry.addData("Too close, red bigger than blue by", colorSensor.red() - colorSensor.blue());
             }
-            else if (colorSensor.red() - colorSensor.blue() >= 20) {
-                telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
-            }
-            else {
-                if (colorSensor.red() > colorSensor.blue()) {
-                    telemetry.addData("Too close, red bigger than blue by", colorSensor.red() - colorSensor.blue());
-                }
-                else {
-                    telemetry.addData("Colors are equal", 0);
-                }
+            else{
+                telemetry.addData("Colors are equal", 0);
             }
         }
 
-        if(!debugImu) {
+        final Orientation angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-            final Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        telemetry.addLine()
+                .addData("status", imu.getSystemStatus().toShortString())
+                .addData("calib", imu.getCalibrationStatus().toString())
+                .addData("heading", formatAngle(angles.angleUnit, angles.firstAngle));
 
-            telemetry.addLine()
-                    .addData("status", imu.getSystemStatus().toShortString())
-                    .addData("calib", imu.getCalibrationStatus().toString())
-                    .addData("heading", formatAngle(angles.angleUnit, angles.firstAngle));
-        }
+        // telemetry.addData("distanceSensor", distanceSensor.status());
 
-        if(!debugLeftFrontDrive) {
+        // Send calculated power to wheels
+        if(debug == false) {
             leftfrontDrive.setPower(leftFrontPower);
-        }
-        if(!debugRightFrontDrive) {
             rightfrontDrive.setPower(rightFrontPower);
-        }
-        if(!debugLeftBackDrive) {
             leftbackDrive.setPower(leftRearPower);
-        }
-        if(!debugRightBackDrive) {
             rightbackDrive.setPower(rightRearPower);
-        }
-        if(!debugServo) {
             servo.setPosition(gripper);
-        }
-        if(!debugServc2) {
             servo2.setPosition(arm);
         }
 
+        // Show the elapsed game time
         telemetry.addData("Status", "Run Time: " + runtime.toString());
     }
 
