@@ -35,6 +35,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 //import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -117,10 +118,10 @@ public class TeleOpMode_TankJohn extends OpMode
 
             // Most robots need the motor on one side to be reversed to drive forward
             // Reverse the motor that runs backwards when connected directly to the battery
-            leftfrontDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightfrontDrive.setDirection(DcMotor.Direction.FORWARD);
-            leftbackDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightbackDrive.setDirection(DcMotor.Direction.FORWARD);
+            leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
+            leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
 
             // Set up the parameters with which we will use our IMU. Note that integration
             // algorithm here just reports accelerations to the logcat log; it doesn't actually
