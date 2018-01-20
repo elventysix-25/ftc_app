@@ -36,7 +36,7 @@ public class blueIMUOp extends OpMode {
         motors[0][1] = hardwareMap.dcMotor.get("frontRight");
         motors[1][0] = hardwareMap.dcMotor.get("backLeft");
         motors[1][1] = hardwareMap.dcMotor.get("backRight");
-        servo = hardwareMap.get(Servo.class, "arm");
+        servo = hardwareMap.get(Servo.class, "jewelArm");
         colorSensor = hardwareMap.colorSensor.get("colorSensor");
         // The motors on the left side of the robot need to be in reverse mode
         for (DcMotor[] motor : motors) {
@@ -79,14 +79,14 @@ public class blueIMUOp extends OpMode {
             servo.setPosition(1);
         }
 
-        while (runtime.seconds() < 2) ;
 
+        while (runtime.seconds() < 2) ;
 
         runtime.reset();
         if (colorSensor.blue() - colorSensor.red() >= 0) {
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
             runtime.reset();
-            while (Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle)) < 5) {
+            while (angles.firstAngle<5) {
                 // Loop through front and back motors
                 for (DcMotor[] motor : motors) {
                     // Set left motor power
@@ -99,20 +99,20 @@ public class blueIMUOp extends OpMode {
             while (runtime.milliseconds() < 1000) {
                 servo.setPosition(0);
             }
-            runtime.reset();
-            while (Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle)) < -5) {
-                // Loop through front and back motors
-                for (DcMotor[] motor : motors) {
-                    // Set left motor power
-                    motor[0].setPower(5);
-                    // Set right motor power
-                    motor[1].setPower(-5);
-                }
-            }
+//            runtime.reset();
+//            while (angles.firstAngle < 0) {
+//                // Loop through front and back motors
+//                for (DcMotor[] motor : motors) {
+//                    // Set left motor power
+//                    motor[0].setPower(5);
+//                    // Set right motor power
+//                    motor[1].setPower(-5);
+//                }
+//            }
         } else if (colorSensor.red() - colorSensor.blue() >= 20) {
             telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
             runtime.reset();
-            while (Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle) )< -5) {
+            while (angles.firstAngle < -5) {
                 // Loop through front and back motors
                 for (DcMotor[] motor : motors) {
                     // Set left motor power
@@ -125,16 +125,16 @@ public class blueIMUOp extends OpMode {
             while (runtime.milliseconds() < 1000) {
                 servo.setPosition(0);
             }
-            runtime.reset();
-            while (Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle) )< 5) {
-                // Loop through front and back motors
-                for (DcMotor[] motor : motors) {
-                    // Set left motor power
-                    motor[0].setPower(-5);
-                    // Set right motor power
-                    motor[1].setPower(5);
-                }
-            }
+//            runtime.reset();
+//            while (angles.firstAngle < 0) {
+//                // Loop through front and back motors
+//                for (DcMotor[] motor : motors) {
+//                    // Set left motor power
+//                    motor[0].setPower(-5);
+//                    // Set right motor power
+//                    motor[1].setPower(5);
+//                }
+//            }
         } else {
             if (colorSensor.red() > colorSensor.blue()) {
                 telemetry.addData("Too close, red bigger than blue by", colorSensor.red() - colorSensor.blue());
@@ -142,7 +142,8 @@ public class blueIMUOp extends OpMode {
                 while (runtime.milliseconds() < 1000) {
                     servo.setPosition(0);
                 }
-            } else {
+            }
+            else {
                 telemetry.addData("Colors are equal", 0);
                 runtime.reset();
                 while (runtime.milliseconds() < 1000) {
@@ -151,7 +152,7 @@ public class blueIMUOp extends OpMode {
             }
         }
 
-        runtime.reset();
+        /*runtime.reset();
         while (runtime.milliseconds() < 570) {
             //Loop through front and back motors
             for (DcMotor[] motor : motors) {
@@ -160,7 +161,7 @@ public class blueIMUOp extends OpMode {
                 //  Set right motor power
                 motor[1].setPower(-100);
             }
-        }
+        }*/
 
         runtime.reset();
         // Loop through front and back motors
@@ -178,6 +179,7 @@ public class blueIMUOp extends OpMode {
     String formatDegrees(double degrees) {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
+    @Override
     public void stop(){
 
     }
