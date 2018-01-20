@@ -34,7 +34,6 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -66,8 +65,8 @@ import static java.lang.Math.pow;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOpMode_OriSquirrelyIMU", group="Iterative Opmode")
-public class  TeleOpMode_OriSquirrelyIMU extends OpMode
+@TeleOp(name="TeleOpMode_JohnSuperAmazingRobotCode", group="Iterative Opmode")
+public class TeleOpMode_JohnSuperAmazingRobotCode extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -97,12 +96,16 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
     private boolean debugGripperLift = false;
     private boolean debugGripperTurn = false;
 
+    private int triggerSet;
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
+
+        triggerSet = 0;
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -272,8 +275,8 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
         powerLeftX = scaleInput(powerLeftX, powerMax);
         powerRightX = scaleInput(powerRightX, powerMax);
 
-        powerGripperLeft = -gamepad2.left_stick_y;
-        powerGripperRight = gamepad2.right_stick_y;
+        powerGripperLeft = gamepad2.left_stick_y;
+        powerGripperRight = -gamepad2.right_stick_y;
         leftTrigger = gamepad2.left_trigger;
         rightTrigger = gamepad2.right_trigger;
         xButton = gamepad2.x;
@@ -324,7 +327,7 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
             rightbackDrive.setPower(powerRightBack);
         }
         if (!debugjewelArm) {
-            jewelArm.setPosition(jewelArmPos);
+            jewelArm.setPosition(.5);
         }
         if(!debugGripperLeft){
             gripperLeft.setPower(powerGripperLeft);
@@ -334,14 +337,34 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
         }
         if(!debugGripperLift){
             if(leftTrigger > 0){
-                gripperLift.setPower(leftTrigger);
+                gripperLift.setPower(-leftTrigger);
             }
             else if(rightTrigger > 0){
                 gripperLift.setPower(rightTrigger);
             }
         }
-        if(!debugGripperTurn){
+        if(!debugGripperTurn) {
+            if (gamepad2.x == true && triggerSet == 0) {
+                runtime.reset();
+                while(runtime.seconds() < 2){
+                    gripperTurn.setPower(3);
+                }
+                triggerSet = 1;
+            }
+            else if (triggerSet == 1 && gamepad2.x == false){
+                triggerSet = 0;
+            }
 
+            if (gamepad2.b == true && triggerSet == 0) {
+                runtime.reset();
+                while(runtime.seconds() < 2){
+                    gripperTurn.setPower(-3);
+                }
+                triggerSet = 1;
+            }
+            else if (triggerSet == 1 && gamepad2.b == false){
+                triggerSet = 0;
+            }
         }
         //add gripperTurn
 
