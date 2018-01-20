@@ -329,7 +329,6 @@ public class TeleOpMode_JohnSuperAmazingRobotCode extends OpMode
         if (!debugjewelArm) {
             jewelArm.setPosition(.5);
         }
-        }
         if(!debugGripperLeft){
             gripperLeft.setPower(powerGripperLeft);
         }
