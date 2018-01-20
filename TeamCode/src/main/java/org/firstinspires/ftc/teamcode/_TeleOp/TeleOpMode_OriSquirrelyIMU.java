@@ -144,13 +144,6 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
             debugRightBackDrive = true;
             telemetry.addData("IllegalArgumentException", "backRight");
         }
-//        try{
-//            gripper = hardwareMap.get(Servo.class, "gripper");
-//        }
-//        catch (IllegalArgumentException iax) {
-//            debugGripper = true;
-//            telemetry.addData("IllegalArgumentException", "gripper");
-//        }
         try{
             arm = hardwareMap.get(Servo.class, "arm");
         }
@@ -256,6 +249,12 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
         double powerLeft = 0;
         double powerRight = 0;
         double powerMax = 1;
+        double powerGripperLeft;
+        double powerGripperRight;
+        double leftTrigger;
+        double rightTrigger;
+        boolean xButton;
+        boolean bButton;
         boolean padRight = false;
         boolean padLeft = false;
         boolean triggerLeft = false;
@@ -272,7 +271,16 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
         bumperLeft = gamepad1.left_bumper;
         powerLeftX = scaleInput(powerLeftX, powerMax);
         powerRightX = scaleInput(powerRightX, powerMax);
-        powerLeftY = scaleInput(powerLeftY, powerMax);
+
+        powerGripperLeft = -gamepad2.left_stick_y;
+        powerGripperRight = gamepad2.right_stick_y;
+        leftTrigger = gamepad2.left_trigger;
+        rightTrigger = gamepad2.right_trigger;
+        xButton = gamepad2.x;
+        bButton = gamepad2.b;
+        powerGripperLeft = scaleInput(powerGripperLeft, powerMax);
+        powerGripperRight = scaleInput(powerGripperRight, powerMax);
+
 
         powerMax = Collections.max(Arrays.asList(powerMax, powerLeftFront, powerLeftBack, powerRightFront, powerRightBack, powerLeftX));
 
@@ -315,23 +323,42 @@ public class  TeleOpMode_OriSquirrelyIMU extends OpMode
         if (!debugRightBackDrive) {
             rightbackDrive.setPower(powerRightBack);
         }
-//        if (!
         if (!debugArm) {
             arm.setPosition(armPos);
         }
+        if(!debugGripperLeft){
+            gripperLeft.setPower(powerGripperLeft);
+        }
+        if(!debugGripperRight){
+            gripperRight.setPower(powerGripperRight);
+        }
+        if(!debugGripperLift){
+            if(leftTrigger > 0){
+                gripperLift.setPower(leftTrigger);
+            }
+            else if(rightTrigger > 0){
+                gripperLift.setPower(rightTrigger);
+            }
+        }
+        //add gripperTurn
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "leftFront (%.2f), rightFront (%.2f), leftBack (%.2f), rightBack (%.2f)", powerLeftFront, powerRightFront, powerLeftBack, powerRightBack);
         telemetry.addData("padRight", padRight);
         telemetry.addData("padLeft", padLeft);
-        telemetry.addData("gripperPos", gripperPos);
         telemetry.addData("powerMax", powerMax);
         telemetry.addData("allZero", allZero);
         telemetry.addData("powerTotal", powerTotal);
         telemetry.addData("powerLeftX", powerLeftX);
         telemetry.addData("powerRightX", powerRightX);
         telemetry.addData("powerLeftY", powerLeftY);
+        telemetry.addData("powerGripperLeft", powerGripperLeft);
+        telemetry.addData("powerGripperRight", powerGripperLeft);
+        telemetry.addData("leftTrigger", leftTrigger);
+        telemetry.addData("rightTrigger", rightTrigger);
+        telemetry.addData("xButton", xButton);
+        telemetry.addData("bButton", bButton);
         if (!debugImu) {
             final Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             telemetry.addLine()
