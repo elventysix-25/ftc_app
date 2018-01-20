@@ -34,6 +34,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -66,7 +67,7 @@ import static java.lang.Math.pow;
  */
 
 @TeleOp(name="TeleOpMode_OriSquirrelyIMU", group="Iterative Opmode")
-public class TeleOpMode_OriSquirrelyIMU extends OpMode
+public class  TeleOpMode_OriSquirrelyIMU extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
