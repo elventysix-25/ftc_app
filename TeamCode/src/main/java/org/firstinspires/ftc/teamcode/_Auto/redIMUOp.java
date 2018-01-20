@@ -36,7 +36,7 @@ public class redIMUOp extends OpMode {
         motors[0][1] = hardwareMap.dcMotor.get("frontRight");
         motors[1][0] = hardwareMap.dcMotor.get("backLeft");
         motors[1][1] = hardwareMap.dcMotor.get("backRight");
-        servo = hardwareMap.get(Servo.class, "arm");
+        servo = hardwareMap.get(Servo.class, "jewelArm");
         colorSensor = hardwareMap.colorSensor.get("colorSensor");
         // The motors on the left side of the robot need to be in reverse mode
         for (DcMotor[] motor : motors) {
