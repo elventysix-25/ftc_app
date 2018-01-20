@@ -34,6 +34,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -66,7 +67,7 @@ import static java.lang.Math.pow;
  */
 
 @TeleOp(name="TeleOpMode_OriSquirrelyIMU", group="Iterative Opmode")
-public class TeleOpMode_OriSquirrelyIMU extends OpMode
+public class  TeleOpMode_OriSquirrelyIMU extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -74,7 +75,6 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
     private DcMotor rightfrontDrive = null;
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
-    private Servo gripper = null;
     private Servo arm = null;
     private boolean debug;
     private double armPos = 0;
@@ -82,16 +82,15 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
     private double gripperPos = 0;
     private double gripperChange = 0;
     private BNO055IMU imu;
-    private Servo gripperLeft;
-    private Servo gripperRight;
-    private Servo gripperLift;
-    private Servo gripperTurn;
+    private DcMotor gripperLeft;
+    private DcMotor gripperRight;
+    private DcMotor gripperLift;
+    private DcMotor gripperTurn;
 
     private boolean debugLeftFrontDrive = false;
     private boolean debugRightFrontDrive = false;
     private boolean debugLeftBackDrive = false;
     private boolean debugRightBackDrive = false;
-    private boolean debugGripper = false;
     private boolean debugArm = false;
     private boolean debugImu = false;
     private boolean debugGripperLeft = false;
@@ -145,13 +144,13 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
             debugRightBackDrive = true;
             telemetry.addData("IllegalArgumentException", "backRight");
         }
-        try{
-            gripper = hardwareMap.get(Servo.class, "gripper");
-        }
-        catch (IllegalArgumentException iax) {
-            debugGripper = true;
-            telemetry.addData("IllegalArgumentException", "gripper");
-        }
+//        try{
+//            gripper = hardwareMap.get(Servo.class, "gripper");
+//        }
+//        catch (IllegalArgumentException iax) {
+//            debugGripper = true;
+//            telemetry.addData("IllegalArgumentException", "gripper");
+//        }
         try{
             arm = hardwareMap.get(Servo.class, "arm");
         }
@@ -177,28 +176,28 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
             telemetry.addData("IllegalArgumentException", "imu");
         }
         try{
-            gripperLeft = hardwareMap.get(Servo.class, "gripperLeft");
+            gripperLeft = hardwareMap.get(DcMotor.class, "gripperLeft");
         }
         catch(IllegalArgumentException iax){
             debugGripperLeft = true;
             telemetry.addData("IllegalArgumentException", "gripperLeft");
         }
         try{
-            gripperRight = hardwareMap.get(Servo.class, "gripperRight");
+            gripperRight = hardwareMap.get(DcMotor.class, "gripperRight");
         }
         catch(IllegalArgumentException iax){
             debugGripperRight = true;
             telemetry.addData("IllegalArgumentException", "gripperRight");
         }
         try{
-            gripperLift = hardwareMap.get(Servo.class, "gripperLift");
+            gripperLift = hardwareMap.get(DcMotor.class, "gripperLift");
         }
         catch(IllegalArgumentException iax){
             debugGripperLift = true;
             telemetry.addData("IllegalArgumentException", "gripperLift");
         }
         try{
-            gripperTurn = hardwareMap.get(Servo.class, "gripperTurn");
+            gripperTurn = hardwareMap.get(DcMotor.class, "gripperTurn");
         }
         catch(IllegalArgumentException iax){
             debugGripperTurn = true;
@@ -316,9 +315,7 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
         if (!debugRightBackDrive) {
             rightbackDrive.setPower(powerRightBack);
         }
-        if (!debugGripper) {
-            gripper.setPosition(gripperPos);
-        }
+//        if (!
         if (!debugArm) {
             arm.setPosition(armPos);
         }

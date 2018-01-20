@@ -27,10 +27,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode._TeleOp;
+package org.firstinspires.ftc.teamcode._Auto;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -67,8 +68,8 @@ import static java.lang.Math.sin;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOpMode_CoachJed", group="Iterative Opmode")
-public class TeleOpMode_CoachJed extends OpMode
+@Autonomous(name="Autonomous_CoachJed", group="Autonomous ")
+public class Autonomous_CoachJed extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -79,8 +80,11 @@ public class TeleOpMode_CoachJed extends OpMode
     private Servo arm = null;
     private double newZero = 0.0;
     private double restoreAngle = 0.0;
+    private boolean debug;
     private double armPos = 0;
     private double armChange = 0;
+    private double gripperPos = 0;
+    private double gripperChange = 0;
     private BNO055IMU imu;
     private DcMotor gripperLeft;
     private DcMotor gripperRight;
@@ -143,12 +147,19 @@ public class TeleOpMode_CoachJed extends OpMode
             debugRightBackDrive = true;
             telemetry.addData("IllegalArgumentException", "backRight");
         }
+//        try{
+//            gripper = hardwareMap.get(Servo.class, "gripper");
+//        }
+//        catch (IllegalArgumentException iax) {
+//            debugGripper = true;
+//            telemetry.addData("IllegalArgumentException", "gripper");
+//        }
         try{
-            arm = hardwareMap.get(Servo.class, "jewelArm");
+            arm = hardwareMap.get(Servo.class, "arm");
         }
         catch (IllegalArgumentException iax) {
             debugArm = true;
-            telemetry.addData("Can't find the: ", "jewelArm");
+            telemetry.addData("IllegalArgumentException", "arm");
         }
         try {
             BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -219,6 +230,11 @@ public class TeleOpMode_CoachJed extends OpMode
         if(!debugRightBackDrive){
             rightbackDrive.setPower(0);
         }
+        if(!debugArm){
+
+        }
+
+        gripperChange = 0;
     }
 
     /*
@@ -278,6 +294,8 @@ public class TeleOpMode_CoachJed extends OpMode
         }
 
         powerRightX = -gamepad1.right_stick_x;
+//        padLeft = gamepad1.dpad_left;
+//        padRight = gamepad1.dpad_right;
         triggerLeft = gamepad1.right_bumper;
         bumperLeft = gamepad1.left_bumper;
         powerLeftX = scaleInput(powerLeftX, powerMax);
@@ -310,6 +328,8 @@ public class TeleOpMode_CoachJed extends OpMode
 //        gripperPos = gripperPos + gripperChange;
         armPos = armPos + armChange;
 
+        gripperPos = gripperPos > 1 ? 1 : gripperPos < 0 ? 0 : gripperPos;
+
         if (!debugLeftFrontDrive) {
             leftfrontDrive.setPower(powerLeftFront);
         }
@@ -325,7 +345,6 @@ public class TeleOpMode_CoachJed extends OpMode
 //        if (!
         if (!debugArm) {
             arm.setPosition(armPos);
-//            arm.setPosition(0.5);
         }
 
         // Show the elapsed game time and wheel power.
@@ -333,7 +352,7 @@ public class TeleOpMode_CoachJed extends OpMode
         telemetry.addData("Motors", "leftFront (%.2f), rightFront (%.2f), leftBack (%.2f), rightBack (%.2f)", powerLeftFront, powerRightFront, powerLeftBack, powerRightBack);
 //        telemetry.addData("padRight", padRight);
 //        telemetry.addData("padLeft", padLeft);
-        telemetry.addData("armPos", armPos);
+        telemetry.addData("gripperPos", gripperPos);
         telemetry.addData("powerMax", powerMax);
         telemetry.addData("allZero", allZero);
         telemetry.addData("powerTotal", powerTotal);

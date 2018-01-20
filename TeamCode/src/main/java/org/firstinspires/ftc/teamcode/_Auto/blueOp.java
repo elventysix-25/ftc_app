@@ -81,56 +81,56 @@ public class blueOp extends LinearOpMode{
         if(colorSensor.blue() - colorSensor.red() >= 0){
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < 5){
-                // Loop through front and back motors
-                for(DcMotor[] motor : motors){
-                    // Set left motor power
-                    motor[0].setPower(-5);
-                    // Set right motor power
-                    motor[1].setPower(5);
-                }
-            }
+//            while(formatAngle(angles.angleUnit, angles.firstAngle) < 5){
+//                // Loop through front and back motors
+//                for(DcMotor[] motor : motors){
+//                    // Set left motor power
+//                    motor[0].setPower(-5);
+//                    // Set right motor power
+//                    motor[1].setPower(5);
+//                }
+//            }
             runtime.reset();
             while(runtime.milliseconds()<1000) {
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < -5){
-                // Loop through front and back motors
-                for(DcMotor[] motor : motors){
-                    // Set left motor power
-                    motor[0].setPower(5);
-                    // Set right motor power
-                    motor[1].setPower(-5);
-                }
-            }
+//            while(formatAngle(angles.angleUnit, angles.firstAngle) < -5){
+//                // Loop through front and back motors
+//                for(DcMotor[] motor : motors){
+//                    // Set left motor power
+//                    motor[0].setPower(5);
+//                    // Set right motor power
+//                    motor[1].setPower(-5);
+//                }
+//            }
         }
         else if(colorSensor.red() - colorSensor.blue() >= 20){
             telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < -5){
-                // Loop through front and back motors
-                for(DcMotor[] motor : motors){
-                    // Set left motor power
-                    motor[0].setPower(5);
-                    // Set right motor power
-                    motor[1].setPower(-5);
-                }
-            }
+//            while(formatAngle(angles.angleUnit, angles.firstAngle) < -5){
+//                // Loop through front and back motors
+//                for(DcMotor[] motor : motors){
+//                    // Set left motor power
+//                    motor[0].setPower(5);
+//                    // Set right motor power
+//                    motor[1].setPower(-5);
+//                }
+//            }
             runtime.reset();
             while(runtime.milliseconds()<1000) {
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < 5){
-                // Loop through front and back motors
-                for(DcMotor[] motor : motors){
-                    // Set left motor power
-                    motor[0].setPower(-5);
-                    // Set right motor power
-                    motor[1].setPower(5);
-                }
-            }
+//            while(formatAngle(angles.angleUnit, angles.firstAngle) < 5){
+//                // Loop through front and back motors
+//                for(DcMotor[] motor : motors){
+//                    // Set left motor power
+//                    motor[0].setPower(-5);
+//                    // Set right motor power
+//                    motor[1].setPower(5);
+//                }
+//            }
         }
         else{
             if(colorSensor.red() > colorSensor.blue()){

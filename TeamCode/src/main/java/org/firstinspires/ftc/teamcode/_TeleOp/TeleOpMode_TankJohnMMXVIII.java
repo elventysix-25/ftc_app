@@ -6,6 +6,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 //import com.qualcomm.robotcore.hardware.GyroSensor;
@@ -44,9 +45,12 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
     private boolean debugLeftBackDrive = false;
     private boolean debugRightBackDrive = false;
     private boolean debugServo = false;
-    private boolean debugServc2 = false;
     private boolean debugColorSensor = false;
     private boolean debugImu = false;
+    private boolean debugRightGripperDrive = false;
+    private boolean debugLeftGripperDrive = false;
+    private boolean debugLiftGripperDrive = false;
+    private boolean debugTurnGripperDrive = false;
 
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftfrontDrive = null;
@@ -54,13 +58,18 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
     private Servo servo = null;
-    private Servo servo2 = null;
     private ColorSensor colorSensor;
+    private DcMotor rightGripperDrive = null;
+    private DcMotor leftGripperDrive = null;
+    private DcMotor liftGripperDrive = null;
+    private DcMotor turnGripperDrive = null;
 
     private BNO055IMU imu;
 
     private int x;
     private int triggerSet;
+    private String turnStation = "Up";
+    private double turnUpPosition;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -104,18 +113,11 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
             telemetry.addData("IllegalArgumentException", "backRight");
         }
         try{
-            servo = hardwareMap.get(Servo.class, "gripper");
+            servo = hardwareMap.get(Servo.class, "jewelArm");
         }
         catch (IllegalArgumentException iax) {
             debugServo = true;
-            telemetry.addData("IllegalArgumentException", "gripper");
-        }
-        try{
-            servo2 = hardwareMap.get(Servo.class, "arm");
-        }
-        catch (IllegalArgumentException iax) {
-            debugServc2 = true;
-            telemetry.addData("IllegalArgumentException", "arm");
+            telemetry.addData("Can't Find the servo: ", "jewelArm");
         }
         try{
             colorSensor = hardwareMap.colorSensor.get("colorSensor");
@@ -140,6 +142,40 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
             debugImu = true;
             telemetry.addData("IllegalArgumentException", "imu");
         }
+        try{
+            rightGripperDrive = hardwareMap.get(DcMotor.class, "gripperRight");
+            rightGripperDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        catch (IllegalArgumentException iax) {
+            debugRightGripperDrive = true;
+            telemetry.addData("Can't find the motor", "gripperRight");
+        }
+        try{
+            leftGripperDrive = hardwareMap.get(DcMotor.class, "gripperLeft");
+            leftGripperDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        catch (IllegalArgumentException iax) {
+            debugLeftGripperDrive = true;
+            telemetry.addData("Can't find the motor", "gripperLeft");
+        }
+        try{
+            liftGripperDrive = hardwareMap.get(DcMotor.class, "gripperLift");
+            liftGripperDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        catch (IllegalArgumentException iax) {
+            debugLiftGripperDrive = true;
+            telemetry.addData("Can't find the motor", "gripperLift");
+        }
+        try{
+            turnGripperDrive = hardwareMap.get(DcMotor.class, "gripperTurn");
+            turnGripperDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            turnUpPosition = turnGripperDrive.getCurrentPosition();
+            telemetry.addData("Up position for the turn motor: ", turnUpPosition);
+        }
+        catch (IllegalArgumentException iax) {
+            debugLiftGripperDrive = true;
+            telemetry.addData("Can't find the motor", "gripperTurn");
+        }
 
         telemetry.addData("Status", "Initialized");
     }
@@ -163,10 +199,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
             rightbackDrive.setPower(0);
         }
         if(!debugServo) {
-            servo.setPosition(0);
-        }
-        if(!debugServc2) {
-            servo2.setPosition(0);
+            servo.setPosition(0.2);
         }
     }
 
@@ -190,8 +223,11 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
         double leftRearPower = 0;
         double rightFrontPower = 0;
         double rightRearPower = 0;
-        double gripper = 0;
-        double arm = 0;
+        double arm = 0.2;
+        double rightGripperPower = 0;
+        double leftGripperPower = 0;
+        double liftGripperPower = 0;
+        double turnGripperPower = 0;
         double joyStick;
         String nothing = "";
 
@@ -200,7 +236,7 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
         if((gamepad1.right_trigger > 0) && (triggerSet == 0)){
             x = x + 1;
             triggerSet = 1;
-            if(x > 5){
+            if(x > 7){
                 x = 0;
             }
         }
@@ -225,12 +261,23 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
             nothing = "rightRear";
         }
         else if(x == 4){
-            gripper = Math.abs(joyStick);
-            nothing = "gripper";
-        }
-        else if(x == 5){
             arm = Math.abs(joyStick);
             nothing = "arm";
+        }
+        else if(x==5){
+            rightGripperPower = -joyStick;
+            nothing = "rightGripper";
+        }
+        else if(x==6){
+            leftGripperPower = joyStick;
+            nothing = "leftGripper";
+        }
+        else if(x==7){
+            liftGripperPower =joyStick;
+            nothing = "liftGripper";
+        }
+        if (arm < 0.20){
+            arm = 0.2;
         }
 
         telemetry.addData("x", x);
@@ -239,8 +286,8 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
         telemetry.addData("rightFrontPower", rightFrontPower);
         telemetry.addData("leftRearPower", leftRearPower);
         telemetry.addData("rightRearPower", rightRearPower);
-        telemetry.addData("gripperPosition", gripper);
         telemetry.addData("armPosition", arm);
+        telemetry.addData("Up position for the turn motor: ", turnUpPosition);
 
         if(!debugColorSensor){
 
@@ -287,10 +334,16 @@ public class TeleOpMode_TankJohnMMXVIII extends OpMode
             rightbackDrive.setPower(rightRearPower);
         }
         if(!debugServo) {
-            servo.setPosition(gripper);
+            servo.setPosition(arm);
         }
-        if(!debugServc2) {
-            servo2.setPosition(arm);
+        if(!debugRightGripperDrive) {
+            rightGripperDrive.setPower(rightGripperPower);
+        }
+        if(!debugLeftGripperDrive) {
+            leftGripperDrive.setPower(leftGripperPower);
+        }
+        if(!debugLiftGripperDrive) {
+            liftGripperDrive.setPower(liftGripperPower);
         }
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
