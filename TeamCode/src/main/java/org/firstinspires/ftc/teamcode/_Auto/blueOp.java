@@ -66,7 +66,7 @@ public class blueOp extends LinearOpMode{
 
         waitForStart();
 
-        //Kill ten seconds. -9. thats 1. quick maths
+        //Kill ten seconds. -9. thats 1. quick mafs
         runtime.reset();
         while(runtime.seconds()<1);
         runtime.reset();
@@ -81,7 +81,7 @@ public class blueOp extends LinearOpMode{
         if(colorSensor.blue() - colorSensor.red() >= 0){
             telemetry.addData("Color Blue", colorSensor.blue() - colorSensor.red());
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < 5){
+            while(Math.abs(Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle))) < 5.0){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -95,7 +95,7 @@ public class blueOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < -5){
+            while(Math.abs(Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle))) < 5.0){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -108,7 +108,7 @@ public class blueOp extends LinearOpMode{
         else if(colorSensor.red() - colorSensor.blue() >= 20){
             telemetry.addData("Color Red", colorSensor.red() - colorSensor.blue());
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < -5){
+            while(Math.abs(Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle))) < 5.0){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -122,7 +122,7 @@ public class blueOp extends LinearOpMode{
                 servo.setPosition(0);
             }
             runtime.reset();
-            while(formatAngle(angles.angleUnit, angles.firstAngle) < 5){
+            while(Math.abs(Integer.parseInt(formatAngle(angles.angleUnit, angles.firstAngle))) < 5.0){
                 // Loop through front and back motors
                 for(DcMotor[] motor : motors){
                     // Set left motor power
@@ -150,7 +150,7 @@ public class blueOp extends LinearOpMode{
         }
 
         runtime.reset();
-        while(runtime.milliseconds()<570){
+        /*while(runtime.milliseconds()<570){
             //Loop through front and back motors
             for(DcMotor[] motor : motors){
                 //Set left motor power
@@ -167,7 +167,7 @@ public class blueOp extends LinearOpMode{
             motor[0].setPower(0);
             // Set right motor power
             motor[1].setPower(0);
-        }
+        }*/
     }
     String formatAngle(AngleUnit angleUnit, double angle) {
         return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
