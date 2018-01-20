@@ -40,7 +40,7 @@ public class blueOp extends OpMode {
     public void loop(){
 
 
-        //Kill ten seconds
+        //Kill ten seconds. -9. thats 1. quick mafs
         runtime.reset();
         while(runtime.seconds()<1);
         runtime.reset();
@@ -126,7 +126,7 @@ public class blueOp extends OpMode {
         }
 
         runtime.reset();
-        while(runtime.milliseconds()<570){
+        /*while(runtime.milliseconds()<570){
             //Loop through front and back motors
             for(DcMotor[] motor : motors){
                 //Set left motor power
@@ -143,7 +143,7 @@ public class blueOp extends OpMode {
             motor[0].setPower(0);
             // Set right motor power
             motor[1].setPower(0);
-        }
+        }*/
     }
     public void stop(){
 

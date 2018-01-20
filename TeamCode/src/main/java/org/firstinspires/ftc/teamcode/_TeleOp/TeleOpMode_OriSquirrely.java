@@ -65,13 +65,10 @@ public class TeleOpMode_OriSquirrely extends OpMode
     private DcMotor rightfrontDrive = null;
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
-    private Servo gripper = null;
     private Servo arm = null;
-    private boolean debug;
+    private boolean debug = false;
     private double armPos = 0;
     private double armChange = 0;
-    private double gripperPos = 0;
-    private double gripperChange = 0;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -83,27 +80,20 @@ public class TeleOpMode_OriSquirrely extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        try {
-            leftfrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-            rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
-            leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-            rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
-            gripper = hardwareMap.get(Servo.class, "gripper");
-            arm = hardwareMap.get(Servo.class, "arm");
+        leftfrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
+        rightfrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+        leftbackDrive = hardwareMap.get(DcMotor.class, "backLeft");
+        rightbackDrive = hardwareMap.get(DcMotor.class, "backRight");
+        arm = hardwareMap.get(Servo.class, "arm");
 
-            leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
-            leftfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
-            leftbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            //gripper.setPosition(0);
-        }
-        catch(IllegalArgumentException iax) {
-            debug = true;
-        }
+        leftfrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightfrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightfrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftbackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightbackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightbackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -123,7 +113,6 @@ public class TeleOpMode_OriSquirrely extends OpMode
             leftbackDrive.setPower(0);
             rightbackDrive.setPower(0);
         }
-        gripperChange = 0;
     }
 
     /*
@@ -154,7 +143,6 @@ public class TeleOpMode_OriSquirrely extends OpMode
         boolean padLeft = false;
         boolean triggerLeft = false;
         boolean bumperLeft = false;
-        double gripperIncrement = .01;
 
 
         powerLeftY  = -gamepad1.left_stick_y;
@@ -178,38 +166,12 @@ public class TeleOpMode_OriSquirrely extends OpMode
         powerRightFront = allZero ? 0 : ((powerRightX + powerLeftY - powerLeftX) / (powerTotal * powerMax));
         powerRightBack = allZero ? 0 : ((powerRightX + powerLeftY + powerLeftX) / (powerTotal * powerMax));
 
-        if (triggerLeft && armPos > 0) {
-            armChange = -gripperIncrement;
-        }
-
-        else if (bumperLeft && armPos <= 1){
-            armChange = gripperIncrement;
-        }
-
-        if (padLeft) {
-            gripperChange = -gripperIncrement;
-        }
-
-        else if (padRight) {
-            gripperChange = gripperIncrement;
-        }
-
-        else {
-            gripperChange = 0;
-        }
-
-        gripperPos = gripperPos + gripperChange;
-        armPos = armPos + armChange;
-
-        gripperPos = gripperPos > 1 ? 1 : gripperPos < 0 ? 0 : gripperPos;
-
         if (!debug) {
             // Send calculated power to wheels
             leftfrontDrive.setPower(powerLeftFront);
             rightfrontDrive.setPower(powerRightFront);
             leftbackDrive.setPower(powerLeftBack);
             rightbackDrive.setPower(powerRightBack);
-            gripper.setPosition(gripperPos);
             arm.setPosition(armPos);
         }
 
@@ -218,7 +180,6 @@ public class TeleOpMode_OriSquirrely extends OpMode
         telemetry.addData("Motors", "leftFront (%.2f), rightFront (%.2f), leftBack (%.2f), rightBack (%.2f)", powerLeftFront, powerRightFront, powerLeftBack, powerRightBack);
         telemetry.addData("padRight", padRight);
         telemetry.addData("padLeft", padLeft);
-        telemetry.addData("gripperPos", gripperPos);
         telemetry.addData("powerMax", powerMax);
         telemetry.addData("allZero", allZero);
         telemetry.addData("powerTotal", powerTotal);
