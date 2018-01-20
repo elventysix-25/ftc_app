@@ -75,7 +75,6 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
     private DcMotor leftbackDrive = null;
     private DcMotor rightbackDrive = null;
     private Servo arm = null;
-    private boolean debug;
     private double armPos = 0;
     private double armChange = 0;
     private double gripperPos = 0;
@@ -145,6 +144,7 @@ public class TeleOpMode_OriSquirrelyIMU extends OpMode
         }
         try{
             arm = hardwareMap.get(Servo.class, "arm");
+            arm.setPosition(0.5);
         }
         catch (IllegalArgumentException iax) {
             debugArm = true;
