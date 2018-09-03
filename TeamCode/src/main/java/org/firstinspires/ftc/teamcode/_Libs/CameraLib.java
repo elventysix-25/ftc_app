@@ -233,7 +233,7 @@ public class CameraLib {
         public void setCameraRight(boolean bRight) {
             mCameraRight = bRight;
         }
-
+      
         public int dataSize() { return mData.length; }
 
         public String dataToString(int count) {

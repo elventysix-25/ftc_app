@@ -194,6 +194,9 @@ class GoToCryptoBoxGuideStep extends AutoLib.MotorGuideStep implements SetMark {
     public boolean loop() {
         super.loop();
 
+        final int minDoneCount = 5;      // require "done" test to succeed this many consecutive times
+        int doneCount = 0;
+
         // initialize previous-time on our first call -> dt will be zero on first call
         if (firstLoopCall()) {
             mPrevTime = mOpMode.getRuntime();           // use timer provided by OpMode
@@ -287,7 +290,6 @@ class GoToCryptoBoxGuideStep extends AutoLib.MotorGuideStep implements SetMark {
                 // TBD
 
                 // compute camera offset from near-side column of target bin (whichever side camera is to the block holder)
-                float cameraBinOffset = avgBinWidth * mCameraOffset;
                 // camera target is center of target column + camera offset in image-string space
                 float cameraTarget = columns.get(mCBColumn-mColumnOffset).mid() + cameraBinOffset;
 
@@ -333,7 +335,7 @@ class GoToCryptoBoxGuideStep extends AutoLib.MotorGuideStep implements SetMark {
             if (distance > 0  &&  distance < 12) {          // for now, stop at 12" from bins
                 // require completion test to pass some min number of times in a row to believe it
                 mDoneCount++;
-                if (mDoneCount >= minDoneCount) {
+                if (mDoneCount >= minDoneCount) {]
                     // stop all the motors and return "done"
                     for (AutoLib.SetPower ms : mMotorSteps) {
                         ms.setPower(0.0);
